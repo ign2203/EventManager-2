@@ -13,13 +13,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping
-public class LocationConroller {
+public class LocationController {
 
     private final LocationService locationService;
     private final LocationConverterDto converter;
-    private final Logger log = LoggerFactory.getLogger(LocationConroller.class);
+    private final Logger log = LoggerFactory.getLogger(LocationController.class);
 
-    public LocationConroller(LocationService locationService, LocationConverterDto converter) {
+    public LocationController(LocationService locationService, LocationConverterDto converter) {
         this.locationService = locationService;
         this.converter = converter;
     }
