@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
     private final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-//400 BAD REQUEST
+
     @ExceptionHandler({MethodArgumentNotValidException.class, IllegalArgumentException.class})
     public ResponseEntity<ErrorMessageResponse> handleValidationException(Exception e, HttpServletRequest request) {
         String detailedMessage = e instanceof MethodArgumentNotValidException
@@ -42,14 +42,11 @@ public class GlobalExceptionHandler {
                 .body(errorDto);
     }
 
-    //401 UNAUTHORIZED
-    //BadCredentialsException - — когда неверный логин/пароль при аутентификации.
-    // UsernameNotFoundException - когда пытаются аутентифицироваться несуществующим пользователем (может совпадать с BadCredentials).
     @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
     public ResponseEntity<ErrorMessageResponse> handleBadCredentialsException(Exception e, HttpServletRequest request) {
-        log.error("401 UNAUTHORIZED at {}: {}", request.getRequestURI(), e.getMessage());//неверный логин/пароль при аутентификации.
+        log.error("401 UNAUTHORIZED at {}: {}", request.getRequestURI(), e.getMessage());
         var errorDto = new ErrorMessageResponse(
-                "401 UNAUTHORIZED",// неверный логин/пароль
+                "401 UNAUTHORIZED",
                 " Incorrect login or password",
                 LocalDateTime.now()
         );
@@ -58,9 +55,6 @@ public class GlobalExceptionHandler {
                 .body(errorDto);
     }
 
-    //403 FORBIDDEN
-    //AuthorizationDeniedException / AccessDeniedException
-    // если внутри сервисов есть проверки прав, которые не связаны напрямую с фильтром SecurityFilterChain.
     @ExceptionHandler({AuthorizationDeniedException.class, AccessDeniedException.class})
     public ResponseEntity<ErrorMessageResponse> handleDeniedException(Exception e, HttpServletRequest request) {
         log.error("403 FORBIDDEN at {}: {}", request.getRequestURI(), e.getMessage());
@@ -74,7 +68,6 @@ public class GlobalExceptionHandler {
                 .body(errorDto);
     }
 
-    //404 NOT FOUND
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorMessageResponse> handleNotFoundException(EntityNotFoundException e, HttpServletRequest request) {
         log.error("404 NOT_FOUND at {}: {}", request.getRequestURI(), e.getMessage());
@@ -90,7 +83,6 @@ public class GlobalExceptionHandler {
                 .body(errorDto);
     }
 
-    // 500 INTERNAL SERVER ERROR
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorMessageResponse> handleGenericException(Exception e, HttpServletRequest request) {
         log.error("500 INTERNAL_SERVER_ERROR at {}: {}", request.getRequestURI(), e.getMessage(), e);

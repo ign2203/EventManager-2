@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 
-//    этот класс оборачивает твоего пользователя в объект UserDetails, который Security может понимать и проверять.
 @Component
 public class CustomerDetailsService implements UserDetailsService {
 
@@ -29,7 +28,7 @@ public class CustomerDetailsService implements UserDetailsService {
         return User
                 .withUsername(username)
                 .password(userEntity.getPassword())
-                .authorities(userEntity.getRole().name())// укажи, что ты передаёшь строку, а не enum
-                 .build();
+                .authorities(userEntity.getRole().name())
+                .build();
     }
 }

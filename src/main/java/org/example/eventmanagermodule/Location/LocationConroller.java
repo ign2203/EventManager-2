@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.Location;
 
-
 import jakarta.validation.Valid;
 import org.example.eventmanagermodule.Location.Converter.LocationConverterDto;
 import org.slf4j.Logger;
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@ RequestMapping("/locations")
+@RequestMapping("/locations")
 public class LocationController {
 
     private final LocationService locationService;
@@ -24,7 +23,6 @@ public class LocationController {
         this.locationService = locationService;
         this.converter = converter;
     }
-
 
     @PostMapping
     @PreAuthorize("hasAuthority('ADMIN')")

@@ -2,13 +2,11 @@ package org.example.eventmanagermodule.User;
 
 
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
-
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -18,13 +16,11 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-
     public User registerUser(SignUpRequest user) {
 
         if (userRepository.existsByLogin(user.login())) {
             throw new IllegalArgumentException("Username is already in use");
         }
-
         var hashedPassword = passwordEncoder.encode(user.password());
 
         var UserToSave = new UserEntity(
@@ -60,6 +56,4 @@ public class UserService {
                 userEntity.getRole()
         );
     }
-
-
 }

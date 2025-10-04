@@ -2,7 +2,6 @@ package org.example.eventmanagermodule.User;
 
 import jakarta.validation.Valid;
 import org.example.eventmanagermodule.security.jwt.AuthenticationService;
-import org.example.eventmanagermodule.security.jwt.JwtTokenResonce;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,15 +30,14 @@ public class UserController {
         log.info("Get request for sign-up: login ={}", user.login());
         var createdUser = userService.registerUser(user);
 
-        return
-                ResponseEntity
-                        .status(HttpStatus.CREATED)
-                        .body(new UserResponseDto(
-                                createdUser.Id(),
-                                createdUser.login(),
-                                createdUser.age(),
-                                UserRole.USER
-                        ));
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new UserResponseDto(
+                        createdUser.Id(),
+                        createdUser.login(),
+                        createdUser.age(),
+                        UserRole.USER
+                ));
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -50,7 +48,7 @@ public class UserController {
         return
                 ResponseEntity
                         .status(HttpStatus.OK)
-                        .body(  new UserResponseDto(
+                        .body(new UserResponseDto(
                                 findUser.Id(),
                                 findUser.login(),
                                 findUser.age(),
@@ -58,19 +56,16 @@ public class UserController {
                         ));
     }
 
-
-
     @PostMapping("/auth")
     @PreAuthorize("permitAll()")
-    ResponseEntity<JwtTokenResonce> authenticate(
+    ResponseEntity<JwtTokenResponse> authenticate(
             @RequestBody @Valid UserLoginRequest userLoginRequest
     ) {
         log.info("Get request for sign-in: login ={}", userLoginRequest.login());
 
         var token = authenticationService.authenticateUser(userLoginRequest);
-
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(new JwtTokenResonce(token));
+                .body(new JwtTokenResponse(token));
     }
 }

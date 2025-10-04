@@ -9,11 +9,11 @@ public record LocationDto(
         @Null
         Long id,
 
-        @Size(min = 1) // не уверен
+        @Size(min = 1)
         @NotBlank(message = "Location name should be not blank")
         String name,
 
-        @NotBlank (message = "Location address should be not blank")
+        @NotBlank(message = "Location address should be not blank")
         String address,
 
         @Min(value = 5, message = "Minimum capacity of location is 5")
