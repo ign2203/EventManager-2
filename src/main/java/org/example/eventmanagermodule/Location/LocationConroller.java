@@ -7,25 +7,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping
-public class LocationConroller {
+@ RequestMapping("/locations")
+public class LocationController {
 
     private final LocationService locationService;
     private final LocationConverterDto converter;
-    private final Logger log = LoggerFactory.getLogger(LocationConroller.class);
+    private final Logger log = LoggerFactory.getLogger(LocationController.class);
 
-    public LocationConroller(LocationService locationService, LocationConverterDto converter) {
+    public LocationController(LocationService locationService, LocationConverterDto converter) {
         this.locationService = locationService;
         this.converter = converter;
     }
 
 
-    @PostMapping("/locations")
+    @PostMapping
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<LocationDto> createLocation(
             @RequestBody
             @Valid LocationDto locationDto) {
@@ -39,7 +41,8 @@ public class LocationConroller {
                 .body(converter.toDto(savedLocation));
     }
 
-    @GetMapping("/locations")
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('Admin','USER')")
     public ResponseEntity<List<LocationDto>> getAllLocations() {
         log.info("Received request to get all Locations");
         var allLocation = locationService.searchAllLocation()
@@ -51,7 +54,8 @@ public class LocationConroller {
                 .body(allLocation);
     }
 
-    @DeleteMapping("/locations/{locationId}")
+    @DeleteMapping("/{locationId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> deleteLocationById(
             @PathVariable(name = "locationId") Long locationId) {
 
@@ -62,7 +66,8 @@ public class LocationConroller {
                 .build();
     }
 
-    @GetMapping("/locations/{locationId}")
+    @GetMapping("/{locationId}")
+    @PreAuthorize("hasAnyAuthority('Admin','USER')")
     public ResponseEntity<LocationDto> findLocationById(
             @PathVariable(name = "locationId") Long locationId) {
         log.info(String.format("Received request to find Location %s", locationId));
@@ -71,15 +76,14 @@ public class LocationConroller {
                 .body(converter.toDto(locationService.getLocationById(locationId)));
     }
 
-    @PutMapping("/locations/{locationId}")
+    @PutMapping("/{locationId}")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<LocationDto> updateLocation(
             @PathVariable(name = "locationId") Long locationId,
             @RequestBody @Valid LocationDto locationDto) {
 
         log.info(String.format("Received request to update Location %s", locationId));
         var updateLocationDomain = locationService.updateLocation(locationId, converter.toDomain(locationDto));
-
-
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(converter.toDto(updateLocationDomain));

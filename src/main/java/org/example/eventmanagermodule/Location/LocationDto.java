@@ -10,13 +10,13 @@ public record LocationDto(
         Long id,
 
         @Size(min = 1) // не уверен
-        @NotBlank
+        @NotBlank(message = "Location name should be not blank")
         String name,
 
-        @NotBlank
+        @NotBlank (message = "Location address should be not blank")
         String address,
 
-        @Min(5)// по ТЗ
+        @Min(value = 5, message = "Minimum capacity of location is 5")
         @NotNull
         Integer capacity,
 

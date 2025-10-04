@@ -1,7 +1,6 @@
 package org.example.eventmanagermodule.Location;
 
 
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
