@@ -48,25 +48,22 @@ public class LocationService {
 
 
     public Location getLocationById(Long locationId) {
-        if (!locationRepository.existsById(locationId)) {
-            throw new EntityNotFoundException("Location with id " + locationId + " does not exist");
-        }
-        return converterEntity.toDomain(locationRepository.findById(locationId).get());
+        var searchedLocation = locationRepository.findById(locationId)
+                .orElseThrow(() -> new EntityNotFoundException("Location with id " + locationId + " does not exist"));
+        return converterEntity.toDomain(searchedLocation);
     }
 
     @Transactional
     public Location updateLocation(Long locationId, Location updateNewLocation) {
-        if (!locationRepository.existsById(locationId)) {
-            throw new EntityNotFoundException("Location with id " + locationId + " does not exist");
-        }
 
-        locationRepository.updateLocation(
-                locationId,
-                updateNewLocation.name(),
-                updateNewLocation.address(),
-                updateNewLocation.capacity(),
-                updateNewLocation.description()
-        );
-        return converterEntity.toDomain(locationRepository.findById(locationId).get());
+        var updateEntityLocation = locationRepository.findById(locationId)
+                .orElseThrow(() -> new EntityNotFoundException("Location with id " + locationId + " does not exist"));
+
+        updateEntityLocation.setName(updateNewLocation.name());
+        updateEntityLocation.setAddress(updateNewLocation.address());
+        updateEntityLocation.setCapacity(updateNewLocation.capacity());
+        updateEntityLocation.setDescription(updateNewLocation.description());
+
+        return converterEntity.toDomain(locationRepository.save(updateEntityLocation));
     }
 }

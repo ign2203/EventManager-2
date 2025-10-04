@@ -11,25 +11,26 @@ public class LocationEntity {
 
     @Id
     @GeneratedValue (strategy = GenerationType.IDENTITY)
-    Long id;
+    @Column(name = "location_id")
+   private Long id;
 
 
     @NotBlank(message = "Name must not be blank")
-    @Column(nullable = false, unique = true)
-    String name;
+    @Column(nullable = false, unique = true,name = "name")
+    private String name;
 
 
     @NotBlank(message = "Name must not be blank")
-    @Column(nullable = false)
-    String address;
+    @Column(nullable = false, name = "address")
+    private String address;
 
     @Min(value = 5)
-    @Column(nullable = false)
-    Integer capacity;
+    @Column(nullable = false, name = "capacity")
+    private Integer capacity;
 
 
-    @Column(nullable = true)
-    String description;
+    @Column(nullable = true, name ="description")
+    private  String description;
 
 
     public LocationEntity() {
