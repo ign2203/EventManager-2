@@ -21,17 +21,8 @@ import java.util.List;
 
 import org.springframework.http.HttpHeaders;
 
-
-//JwtTokenFilter — это фильтр HTTP-запросов, который проверяет JWT на каждом запросе к серверу.
 @Component
 public class JwtTokenFilter extends OncePerRequestFilter {
-/*
-OncePerRequestFilter
-Это класс из Spring Security.
-Гарантирует, что фильтр сработает только один раз на один HTTP-запрос.
-
-
- */
 
     private static final Logger log = LoggerFactory.getLogger(JwtTokenFilter.class);
 
@@ -40,55 +31,41 @@ OncePerRequestFilter
 
     public JwtTokenFilter(
             JwtTokenManager jwtTokenManager,
-            @Lazy UserService userService) { //"создай этот бин только тогда, когда он реально нужен".
+            @Lazy UserService userService) {
         this.jwtTokenManager = jwtTokenManager;
         this.userService = userService;
     }
 
-    //Это метод, который Spring вызывает для каждого запроса.
+
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request, // запрос
-            HttpServletResponse response, // ответ на запрос
-            FilterChain filterChain // это цепочка всех фильтров, через которую должен пройти запрос.
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);//вытаскиваем из Header JWT  в формате String
-        //Проверяет формат: токен не пустой и начинается с Bearer .
-        // Логика: если нет заголовка или он не начинается с Bearer → просто пропускаем запрос дальше без проверки токена.
+        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response); //
             return;
         }
-        var jwtToken = authorizationHeader.substring(7);// далее получаем jwt Токен без Bearer и сохраняем в jwtToken
-        String loginFromToken; // болванка
-
-        //Парсит токен через JwtTokenManager → получает логин пользователя
+        var jwtToken = authorizationHeader.substring(7);
+        String loginFromToken;
         try {
-            loginFromToken = jwtTokenManager.getLoginFromToken(jwtToken); // далее выдергиваем логин из токена по методу jwtTokenManager
-        } catch (Exception e) { // блок в случае если токен невалидный
+            loginFromToken = jwtTokenManager.getLoginFromToken(jwtToken);
+        } catch (Exception e) {
             logger.error("Invalid JWT Token", e);
             filterChain.doFilter(request, response);
             return;
         }
-       // Проверяет, есть ли такой пользователь в БД (через UserService).
         User user = userService.findByLogin(loginFromToken);
 
-//Создаёт UsernamePasswordAuthenticationToken с пользователем и ролями.
-//Это класс из Spring Security, который представляет аутентифицированного пользователя.
-        //По сути, это контейнер, который говорит Spring Security:
-        // “Вот кто пользователь, вот его роли, он аутентифицирован”.
         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                user, // Вот кто пользователь
-                null, // credentials — пароль не нужен, т.к. проверка токена уже прошла
-                List.of(new SimpleGrantedAuthority((user.role().toString()))));// вот его роли
-        //Кладёт объект аутентификации в SecurityContext → теперь Spring Security знает, кто пользователь.
+                user,
+                null,
+                List.of(new SimpleGrantedAuthority((user.role().toString()))));
         SecurityContextHolder.getContext()
                 .setAuthentication(token);
-
-//Пропускает запрос дальше по цепочке фильтров (filterChain.doFilter) → дальше включаются правила из SecurityFilterChain и контроллеры
         filterChain.doFilter(request, response);
-
-
     }
 }

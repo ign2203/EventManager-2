@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.User;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -8,10 +7,7 @@ import jakarta.validation.constraints.Size;
 
 public record SignUpRequest (
 
-/*
-данный класс нужен для регистрации
-пользователь вводит обязательные поля, которым должны выполнять проверку валидности
- */
+
         @NotBlank(message = "login must not be blank")
         @Size(min = 4)
         String login,

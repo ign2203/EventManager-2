@@ -16,9 +16,6 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 
 
-//Обработчик ошибок аутентификации — если пользователь не вошёл в систему, но пытается попасть в защищённый эндпоинт
-//(то есть не вошёл в систему, токен не передал или он просрочен).
-//401
 @Component
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
@@ -28,7 +25,6 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public CustomAuthenticationEntryPoint(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
-
 
     @Override
     public void commence(HttpServletRequest request,
@@ -45,8 +41,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         );
         var jsonMessage = objectMapper.writeValueAsString(message);
 
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);// → говорим клиенту: ответ будет в формате JSON.
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);// код 401 Unauthorized, стандартный ответ, когда пользователь не вошёл в систему.
-        response.getWriter().write(jsonMessage);//отправляем сам JSON-текст клиенту (тело ответа).
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write(jsonMessage);
     }
 }

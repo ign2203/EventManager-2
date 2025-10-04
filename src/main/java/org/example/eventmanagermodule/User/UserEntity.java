@@ -7,17 +7,15 @@ import jakarta.validation.constraints.*;
 @Table(name = "users")
 public class UserEntity {
 
-
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
-    @Column(name ="login",unique=true)
+    @Column(name = "login", unique = true)
     @NotBlank(message = "login must not be blank")
     @Size(min = 4)
-    private  String login;
-    @Column(name ="password")
+    private String login;
+    @Column(name = "password")
 
     @NotBlank(message = "password must not be blank")
     private String password;
@@ -25,13 +23,12 @@ public class UserEntity {
     @Column(name = "age")
     @Min(18)
     @Max(116)
-    private  int age; // обязательный для заполнения
+    private int age;
 
     @NotNull(message = "Role must not be blank")
-    @Column(name ="role")
+    @Column(name = "role")
     @Enumerated(EnumType.STRING)
-    private   UserRole role;
-
+    private UserRole role;
 
 
     public UserEntity() {

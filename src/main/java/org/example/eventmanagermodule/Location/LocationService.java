@@ -15,7 +15,8 @@ public class LocationService {
     private final LocationConverterEntity converterEntity;
 
 
-    public LocationService(LocationRepository locationRepository, LocationConverterEntity converterEntity) {// вот здесь подчеркивается converterEntity, IDEA ругается
+    public LocationService(LocationRepository locationRepository,
+                           LocationConverterEntity converterEntity) {
         this.locationRepository = locationRepository;
         this.converterEntity = converterEntity;
     }
@@ -28,7 +29,6 @@ public class LocationService {
         }
         return converterEntity.toDomain(locationRepository.save(searchLocation));
     }
-
 
     public List<Location> searchAllLocation() {
         return locationRepository.findAll()
@@ -45,7 +45,6 @@ public class LocationService {
         }
         locationRepository.deleteById(locationId);
     }
-
 
     public Location getLocationById(Long locationId) {
         var searchedLocation = locationRepository.findById(locationId)

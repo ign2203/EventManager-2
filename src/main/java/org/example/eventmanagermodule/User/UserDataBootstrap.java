@@ -13,13 +13,13 @@ public class UserDataBootstrap {
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
-
     public UserDataBootstrap(UserRepository userRepository, UserService userService, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userService = userService;
         this.passwordEncoder = passwordEncoder;
     }
-     @EventListener(ApplicationReadyEvent.class)
+
+    @EventListener(ApplicationReadyEvent.class)
     public void creatingDefaultUsers() {
 
         if (userRepository.findByLogin("admin").isEmpty()) {

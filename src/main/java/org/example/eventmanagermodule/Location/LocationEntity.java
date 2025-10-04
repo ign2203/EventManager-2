@@ -10,15 +10,13 @@ import jakarta.validation.constraints.NotBlank;
 public class LocationEntity {
 
     @Id
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "location_id")
-   private Long id;
-
+    private Long id;
 
     @NotBlank(message = "Name must not be blank")
-    @Column(nullable = false, unique = true,name = "name")
+    @Column(nullable = false, unique = true, name = "name")
     private String name;
-
 
     @NotBlank(message = "Name must not be blank")
     @Column(nullable = false, name = "address")
@@ -28,10 +26,8 @@ public class LocationEntity {
     @Column(nullable = false, name = "capacity")
     private Integer capacity;
 
-
-    @Column(nullable = true, name ="description")
-    private  String description;
-
+    @Column(nullable = true, name = "description")
+    private String description;
 
     public LocationEntity() {
     }

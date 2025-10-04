@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.User;
 
-
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
