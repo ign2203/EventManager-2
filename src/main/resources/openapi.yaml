@@ -58,7 +58,7 @@ paths:
       tags:
       - Locations
     post:
-      description: Создать новую локацию. Доступно только админам. Id должен задаваться
+      description: Создать новую локацию. Доступно только админам. id должен задаваться
         на стороне приложения (базой данных)
       requestBody:
         content:
@@ -1368,7 +1368,7 @@ components:
           example: Лекция по Java
           type: string
         ownerId:
-          description: id пользователя-создателя мероприятия
+          description: locationId пользователя-создателя мероприятия
           example: "10"
           type: string
         maxPlaces:

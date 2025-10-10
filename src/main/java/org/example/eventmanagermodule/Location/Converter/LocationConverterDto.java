@@ -11,7 +11,7 @@ public class LocationConverterDto {
     public Location toDomain (LocationDto dto) {
 
         return new Location(
-                dto.id(),
+                dto.locationId(),
                 dto.name(),
                 dto.address(),
                 dto.capacity(),

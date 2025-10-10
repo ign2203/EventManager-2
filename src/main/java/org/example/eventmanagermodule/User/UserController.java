@@ -43,7 +43,7 @@ public class UserController {
     @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponseDto> findUserById(@PathVariable Long userId) {
-        log.info("Get a user search request: id ={}", userId);
+        log.info("Get a user search request: locationId ={}", userId);
         var findUser = userService.findUserById(userId);
         return
                 ResponseEntity
