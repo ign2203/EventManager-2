@@ -14,6 +14,7 @@ public class EventStatusScheduler {
 
     private final EventRepository eventRepository;
     private final static Logger log = LoggerFactory.getLogger(EventService.class);
+
     public EventStatusScheduler(EventRepository eventRepository) {
         this.eventRepository = eventRepository;
     }
@@ -24,23 +25,20 @@ public class EventStatusScheduler {
 
         List<EventEntity> events = eventRepository.findAll();
         for (EventEntity event : events) {
-            LocalDateTime now = LocalDateTime.now(); // текущее время
-            LocalDateTime endTime = event.getDate().plusMinutes(event.getDuration()); // время завершения мероприятия
-
-            if (now.isBefore(event.getDate()) && now.isBefore(endTime)) {
-                // если текущее время стало ДО isBefore времени начала и завершения мероприятия, можно сказать если  event.getDate())  <now<endTime, то STARTED
-                event.setStatus(EventStatus.STARTED); // то статус началось
-            } else if (now.isAfter(endTime)) {
-                // если настоящее время  уже ПОСЛЕ endTime, то FINISHED, или если Now> endTime, то FINISHED
-                event.setStatus(EventStatus.FINISHED);
+            if (event.getStatus() != EventStatus.CLOSED) {
+                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime endTime = event.getDate().plusMinutes(event.getDuration());
+                if (now.isBefore(event.getDate())) {
+                    event.setStatus(EventStatus.WAIT_START);
+                } else if (now.isAfter(event.getDate()) && now.isBefore(endTime)) {
+                    event.setStatus(EventStatus.STARTED);
+                } else if (now.isAfter(endTime)) {
+                    event.setStatus(EventStatus.FINISHED);
+                }
             }
-
 //            log.info("Event {} | start={} | end={} | now={} | status={}",
 //                    event.getId(), event.getDate(), endTime, now, event.getStatus());
         }
         eventRepository.saveAll(events);
     }
 }
-
-// before - до
-//after - после

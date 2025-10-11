@@ -26,12 +26,6 @@ public class EventController {
         this.converterDto = converterDto;
     }
 
-/*
-Учтите валидацию всех полей. Все поля обязательные при создании, также должна быть соблюдена логика (например время не может быть в прошлом, стомость > 0 и т.д.)
-Локация должна существовать и ее вместимость должна позволять провести это мероприятие,
- т.е. кол-во мест должно быть достаточно для всех участников.
- */
-
     @PostMapping()
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     public ResponseEntity<EventDto> createEvent(
@@ -45,13 +39,6 @@ public class EventController {
                 .body(converterDto.toDto(eventDomain));
     }
 
-
-    /*
-    Доступно только ADMIN, либо создателю мероприятия. Т.е. роль из JWT токена должна быть ADMIN,
-    либо userId должен быть равен создателю мероприятия.
-    Должно быть реализовано "мягкое(soft) удаление" - на самом деле строка в БД не удалется, только меняется статус мероприятия на CANCELLED.
-     При этом нужно учесть то, что не каждое мероприятие можно отменить (можно отменить только те мероприятия, которые еще не начались).
-     */
     @DeleteMapping("/{eventId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     public ResponseEntity<Void> deleteEvent(@PathVariable(name = "eventId") Long eventId) {
@@ -74,12 +61,6 @@ public class EventController {
                 .body(converterDto.toDto(searchEventDomain));
     }
 
-
-    /*
-    Доступно только ADMIN, либо создателю мероприятия. Т.е. роль из JWT токена должна быть ADMIN, либо userId должен быть равен создателю мероприятия.
-    Учтите то, как можно менять мероприятие.
-    Валидируйте входные значения, например maxPlaces должно быть больше, чем уже записанных пользователей, стоимость > 0, длительность > 0 и т.д
-     */
     @PutMapping("/{eventId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     public ResponseEntity<EventDto> updateEvent(
@@ -93,7 +74,6 @@ public class EventController {
                 .body(converterDto.toDto(updateEventDomain));
     }
 
-    //Все мероприятия созданные пользователем, который выполняет запрос.
     @GetMapping("/my")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     public ResponseEntity<List<EventDto>> getMyEvent() {
@@ -110,12 +90,10 @@ public class EventController {
                 .body(eventDtoList);
     }
 
-    //Поиск всех мероприятий по фильтру, только у ментора видимо ошибка, так как аннотация стоит именно POST
     @PostMapping("/search")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     public ResponseEntity<List<EventDto>> getSearchEvent(
-            @Valid EventSearchRequestDto eventSearchRequestDto) // только здесь нужно подумать по поводу аннотаций, пользователь не обязан передавать все поля для поиска
-    // поэтому нужно будет явно указать в классе EventSearchRequestDto необходимые аннотации
+            @Valid EventSearchRequestDto eventSearchRequestDto)
     {
         log.info("REST request to get Search all events by filter : {}", eventSearchRequestDto);
         var searchEventDomain = eventService.getSearchEvent(eventSearchRequestDto);
@@ -125,17 +103,6 @@ public class EventController {
                         .map(converterDto::toDto)
                         .toList());
     }
-
-// Далее идет логика регистрации пользователя на мероприятие,
-
-/*
-//Необходимо учесть, что статус мероприятия должен позволять регистрацию.
-//Можно зарегестрироваться только на мероприятие, которое не законочилось и не отменено.
-    // далее здесь
-    здесь нужно подумать, что мы будем возвращать пользователю при успешной регистрации на мероприятие
-        похорошему нужно будет сделать логирование
-        пока возвращаем EventDto
- */
 
 
     @PostMapping("/registrations/{eventId}")
@@ -150,10 +117,9 @@ public class EventController {
                 .body(converterDto.toDto(registerEvent));
     }
 
-    //Все мероприятия на которые записан пользователь. Мероприятия должны возвращаться все, даже те, которые отменены или закончены.
     @GetMapping("/registrations/my")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public  ResponseEntity<List<EventDto>> myRegisterEvent () {
+    public ResponseEntity<List<EventDto>> myRegisterEvent() {
         log.info("REST request All events for which the user is registered");
         var myRegisterEvent = eventService.myRegisterEvent();
         return ResponseEntity
@@ -164,12 +130,11 @@ public class EventController {
                         .toList());
     }
 
-//Необходимо учесть статус мероприятия. Нельзя отменить регистрацию, если мероприятие уже началось или закончилось.
 
     @DeleteMapping("/registrations/cancel/{eventId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
     public ResponseEntity<Void> deleteRegisterEvent(
-            @PathVariable(name = "eventId") Long eventId){
+            @PathVariable(name = "eventId") Long eventId) {
         log.info("REST request to cancelling registration for an event");
         eventService.deleteRegisterEvent(eventId);
         return ResponseEntity

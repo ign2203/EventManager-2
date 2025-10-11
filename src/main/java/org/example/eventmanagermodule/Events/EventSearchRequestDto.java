@@ -16,33 +16,21 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-//
-//Фильтр для поиска мероприятий.
-// Обязательных полей нет. Если все поля не заданы, то должен вернуться список всех мероприятий
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EventSearchRequestDto {
 
 
-
     private String name;
-
-
-
-
     @Min(value = 5, message = "plaseMin - min = 5")
     private Integer placesMin;
 
     @Min(5)
-
- @Nullable
-    private Integer placesMax; // количество максимальных мест
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")// нужно подумать, чтобы dateStartAfter был точно меньше dateStartBefore
+    @Nullable
+    private Integer placesMax;
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private LocalDateTime dateStartAfter;
-
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX") // нужно подумать, чтобы dateStartBefore был точно больше dateStartAfter
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
     private LocalDateTime dateStartBefore;
-
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal costMin;
 

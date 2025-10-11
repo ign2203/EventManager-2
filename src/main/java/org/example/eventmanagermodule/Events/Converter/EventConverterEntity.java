@@ -15,7 +15,7 @@ public class EventConverterEntity {
         return new Event(
                 entity.getId(),
                 entity.getName(),
-                entity.getOwner() != null ? entity.getOwner().getId() : null, // ругается потому что у меня в Event Long, а в   private UserEntity owner;
+                entity.getOwner() != null ? entity.getOwner().getId() : null,
                 entity.getLocation() != null ? entity.getLocation().getId() : null,
                 entity.getMaxPlaces(),
                 entity.getOccupiedPlaces(),
@@ -37,7 +37,7 @@ public class EventConverterEntity {
                 domain.id(),
                 domain.name(),
                 user,
-                location, // ругается потому что в Entity  у меня Location, а Event  у меня Long
+                location,
                 domain.maxPlaces(),
                 domain.occupiedPlaces(),
                 domain.date(),

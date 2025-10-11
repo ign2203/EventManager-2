@@ -1,11 +1,7 @@
 package org.example.eventmanagermodule.Events;
 
-
-
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
 
 public record Event(
         Long id,

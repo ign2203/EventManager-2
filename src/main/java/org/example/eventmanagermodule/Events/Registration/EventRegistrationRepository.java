@@ -18,9 +18,9 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
 
 
     @Query("""
-           SELECT e.eventEntity FROM EventRegistration e WHERE e.userEntity = :user 
+           SELECT e.eventEntity FROM EventRegistration e WHERE e.userEntity = :user
            """)
-        // установи eventEntity из EventRegistration по фильтру userEntity, который мы передали
+
     List<EventEntity> myRegisterEvent(
             UserEntity user
     );

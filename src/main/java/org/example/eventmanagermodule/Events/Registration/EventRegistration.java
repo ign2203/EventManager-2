@@ -17,18 +17,18 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "event_registration",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"event_id","user_id"})) //Это последнее средство защиты от двойной регистрации.
+        uniqueConstraints = @UniqueConstraint(columnNames = {"event_id","user_id"}))
 public class EventRegistration {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne (fetch = FetchType.EAGER)// одно мероприятие может иметь много регистраций.
+    @ManyToOne (fetch = FetchType.EAGER)
     @JoinColumn(name = "event_id", nullable = false)
     EventEntity eventEntity;
 
-    @ManyToOne (fetch = FetchType.EAGER)//один пользователь может быть зарегистрирован на много мероприятий.
+    @ManyToOne (fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
     UserEntity userEntity;
 

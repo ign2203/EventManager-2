@@ -1,16 +1,11 @@
 package org.example.eventmanagermodule.Events;
 
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+
 import jakarta.persistence.*;
-import jakarta.validation.constraints.DecimalMin;
-import org.example.eventmanagermodule.Location.LocationEntity;
-import org.example.eventmanagermodule.User.UserEntity;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,13 +13,7 @@ import java.util.List;
 
 public interface EventRepository extends JpaRepository<EventEntity, Long> {
 
-    @Lock(LockModeType.PESSIMISTIC_WRITE) // «пессимистическая блокировка на запись».
-    /*
-    Если один пользователь начал транзакцию и заблокировал событие, другой будет ждать.
-    4️⃣ Когда использовать
-Когда есть конкурирующие операции записи, и ты хочешь гарантировать целостность данных.
-В твоём случае: увеличение occupiedPlaces при регистрации нескольких пользователей одновременно.
-     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     List<EventEntity> findAllByOwnerId(Long ownerId);
 
 
@@ -55,5 +44,4 @@ public interface EventRepository extends JpaRepository<EventEntity, Long> {
             Long locationId,
             EventStatus eventStatus
     );
-
 }

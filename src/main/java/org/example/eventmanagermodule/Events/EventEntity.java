@@ -28,8 +28,8 @@ public class EventEntity {
     @Column(name = "name")
     private String name;
 
-    @ManyToOne(fetch = FetchType.LAZY) // указал ленивую загрузку, при выгрузке пользователей, их мероприятия не будут отображаться, пока их мы не попросим, обернули в прокси
-    @JoinColumn(name ="user_id") // название колонки в таблице events, будет user_id,   @JoinColumn - мы говорим "соедини с другой сущностью, // соединяем с user.id
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name ="user_id")
     private UserEntity owner;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,10 +37,10 @@ public class EventEntity {
     private LocationEntity location;
 
 
-    @Column(name = "maxPlaces") //  Максимальное кол-во мест на мероприятии
+    @Column(name = "maxPlaces")
     private Integer maxPlaces;
 
-    @Column(name = "occupied_places") // Кол-во уже занятых мест
+    @Column(name = "occupied_places")
     private Integer occupiedPlaces;
 
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
