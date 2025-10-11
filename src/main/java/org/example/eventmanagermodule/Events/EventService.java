@@ -5,10 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.example.eventmanagermodule.Events.Converter.EventConverterEntity;
+import org.example.eventmanagermodule.Events.Registration.EventRegistration;
+import org.example.eventmanagermodule.Events.Registration.EventRegistrationRepository;
 import org.example.eventmanagermodule.Location.LocationRepository;
 import org.example.eventmanagermodule.User.User;
+import org.example.eventmanagermodule.User.UserEntity;
+import org.example.eventmanagermodule.User.UserRepository;
 import org.example.eventmanagermodule.User.UserService;
 import org.example.eventmanagermodule.security.CustomerDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -16,6 +22,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -24,9 +31,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import static java.time.LocalDateTime.now;
+
 @Service
 public class EventService {
 
+    private final static Logger log = LoggerFactory.getLogger(EventService.class);
     private final LocalDateTime pointInTime;
     private final ObjectMapper objectMapper;
     private final CustomerDetailsService userDetailsService;
@@ -34,9 +44,11 @@ public class EventService {
     private final EventRepository eventRepository;
     private final EventConverterEntity eventConverterEntity;
     private final UserService userService;
+    private final EventRegistrationRepository eventRegistrationRepository;
+    private final UserRepository userRepository;
 
 
-    public EventService(@Value("${event.date.min}") String pointInTimeStr, ObjectMapper objectMapper, CustomerDetailsService userDetailsService, LocationRepository locationRepository, EventRepository eventRepository, EventConverterEntity eventConverterEntity, UserService userService) {
+    public EventService(@Value("${event.date.min}") String pointInTimeStr, ObjectMapper objectMapper, CustomerDetailsService userDetailsService, LocationRepository locationRepository, EventRepository eventRepository, EventConverterEntity eventConverterEntity, UserService userService, EventRegistrationRepository eventRegistrationRepository, UserRepository userRepository) {
         this.pointInTime = LocalDateTime.parse(pointInTimeStr);
         this.objectMapper = objectMapper;
         this.userDetailsService = userDetailsService;
@@ -44,6 +56,8 @@ public class EventService {
         this.eventRepository = eventRepository;
         this.eventConverterEntity = eventConverterEntity;
         this.userService = userService;
+        this.eventRegistrationRepository = eventRegistrationRepository;
+        this.userRepository = userRepository;
     }
 
 /*
@@ -263,18 +277,6 @@ public class EventService {
 
     }
 
-
-    private User getCurrentUser() { // в этом методе по аутентификации мы возвращаем ЛОГИН
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
-            throw new IllegalStateException("Пользователь не аутентифицирован или неправильный тип principal");
-        }
-
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        return userService.findByLogin(userDetails.getUsername());
-    }
-
-
     //Поиск всех мероприятий по фильтру, только у ментора видимо ошибка, так как аннотация стоит именно POST
 
     /*
@@ -327,4 +329,117 @@ public class EventService {
                 .map(eventConverterEntity::toDomain)
                 .toList();
     }
+/*
+мысли вслух по поводу реализации при регистрации пользователя нужно будет менять переменную в occupiedPlaces во всех классах
+как я это вижу, если пользователь аутентифицирован, то он может зарегистрировать на мероприятие
+далее нужна проверка есть ли такое мероприятие
+далее проверка статуса мероприятие, если статус мероприятие  CLOSED или FINISHED, то бросаем исключение, иначе идем дальше
+
+далее проверка есть ли на данном мероприятие свободные места maxPlaces
+если есть то меняем переменную occupiedPlaces, то есть при создании мероприятия она у нас по дефолту равна нулю, то здесь будем менять, что то ввиде счетчика
+я еще помню, что лучше этот счетчик сделать атомарным, да в принципе, весь метод нужно обернурть в транзакцию
+ */
+
+
+    @Transactional
+    public Event registerEvent(Long eventId) {
+
+        var searchEvent = eventRepository.findById(eventId) // проверка мероприятия в БД
+                .orElseThrow(() -> new EntityNotFoundException("Event with id " + eventId + " not found"));
+
+
+        User currentUser = getCurrentUser(); // получаем пользователя
+        UserEntity userEntity = userRepository.findById(currentUser.id()) // ищем сущность пользователя
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (eventRegistrationRepository.existsByEventEntityAndUserEntity(searchEvent, userEntity)) { //передаем в метод две сущности, пользователя и мероприятияе
+            throw new IllegalArgumentException("Пользователь уже зарегистрирован на это мероприятие");
+        }
+        var registeredEntity = new EventRegistration(
+                null,
+                searchEvent,
+                userEntity,
+                now()
+        );
+        log.info("Сохраняем регистрацию: event={}, user={}", searchEvent.getId(), userEntity.getId());
+        eventRegistrationRepository.save(registeredEntity);
+
+
+        if (searchEvent.getStatus() == EventStatus.CLOSED || searchEvent.getStatus() == EventStatus.FINISHED) {
+            throw new IllegalArgumentException("Невозможно зарегистрироваться на мероприятие, которое завершено или отменено");
+        }
+//4️⃣ Проверка мест
+
+        int freePlaces = searchEvent.getMaxPlaces() - searchEvent.getOccupiedPlaces();
+        if (freePlaces <= 0) {
+            throw new IllegalArgumentException("Невозможно зарегистрироваться на мероприятие, так как нет свободных мест");
+        }
+
+        searchEvent.setOccupiedPlaces(searchEvent.getOccupiedPlaces() + 1);
+        var savedEntity = eventRepository.save(searchEvent);
+        return eventConverterEntity.toDomain(savedEntity);
+
+    }
+
+
+
+
+/*
+так давай по реализации данного метода, вернуть мы должны список мероприятий на которые зарегистрировался пользователь
+получаем мы будем список, из БД а именно из таблицы EventRegistrationRepository, здесь она нам второй раз пригодилась
+сперва проходим проверку по пользователю
+после достаем весь список мероприятий из БД
+думаю, может быть нужно сделать это через Query, так как лучше сделать это с помощью выгрузки сразу, иначе могут возникнуть N+1 запрос
+если пользователь никуда не регистрировался, то возращаем пустой список
+ */
+
+    public List<Event> myRegisterEvent() {
+
+        User currentUser = getCurrentUser(); // получаем пользователя
+        UserEntity userEntity = userRepository.findById(currentUser.id()) // ищем сущность пользователя
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        var eventEntity = eventRegistrationRepository.myRegisterEvent(userEntity);
+        return eventEntity.stream()
+                .map(eventConverterEntity::toDomain)
+                .toList();
+    }
+
+    /*
+    мысли вслух по реализации данного метода, мы передаем в запросе id, мероприятие, на которые мы уже зарегистрировались
+    и нам нужно если ли реально есть регистрации, удалить объект из БД по данному мероприятию из EventRegistrationRepository
+    сперва, проверяем пользователя
+     */
+
+
+    @Transactional
+    public void deleteRegisterEvent(Long eventId) {
+        User currentUser = getCurrentUser(); // получаем пользователя
+        UserEntity userEntity = userRepository.findById(currentUser.id()) // ищем сущность пользователя
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+
+        var searchEvent = eventRepository.findById(eventId) // проверка мероприятия в БД
+                .orElseThrow(() -> new EntityNotFoundException("Event with id " + eventId + " not found"));
+        if (searchEvent.getStatus() == EventStatus.FINISHED || searchEvent.getStatus() == EventStatus.STARTED) {
+            throw new IllegalArgumentException("Невозможно отменить регистрацию на мероприятие, которое уже началось или завершено");
+        }
+
+        var registration = eventRegistrationRepository
+                .findByEventEntityAndUserEntity(searchEvent, userEntity)
+                .orElseThrow(() -> new IllegalArgumentException("Пользователь не зарегистрирован на мероприятие"));
+        eventRegistrationRepository.delete(registration);
+    }
+
+
+    private User getCurrentUser() { // в этом методе по аутентификации мы возвращаем ЛОГИН
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof UserDetails)) {
+            throw new IllegalStateException("Пользователь не аутентифицирован или неправильный тип principal");
+        }
+
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        return userService.findByLogin(userDetails.getUsername());
+    }
+
+
 }

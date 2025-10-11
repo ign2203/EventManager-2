@@ -126,24 +126,54 @@ public class EventController {
                         .toList());
     }
 
+// Далее идет логика регистрации пользователя на мероприятие,
 
-}
-//
-
-//
-
-
-// Далее идет логика регистрации пользователя на мероприятие, пока не буду это реализовывать, давай остановимся на методах выше, я хочу всю логику с регистрацией
-// на мероприятие загнать в отдельный контроллер, но пока думаю
-/// *
+/*
 //Необходимо учесть, что статус мероприятия должен позволять регистрацию.
 //Можно зарегестрироваться только на мероприятие, которое не законочилось и не отменено.
-// */
-// */
-//    @PutMapping("/registrations/{eventId}")
-//    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-//
-//    public
+    // далее здесь
+    здесь нужно подумать, что мы будем возвращать пользователю при успешной регистрации на мероприятие
+        похорошему нужно будет сделать логирование
+        пока возвращаем EventDto
+ */
 
 
-//}
+    @PostMapping("/registrations/{eventId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    public ResponseEntity<EventDto> registerEvent(
+            @PathVariable(name = "eventId") Long eventId) {
+
+        log.info("REST request to register Event : {}", eventId);
+        var registerEvent = eventService.registerEvent(eventId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(converterDto.toDto(registerEvent));
+    }
+
+    //Все мероприятия на которые записан пользователь. Мероприятия должны возвращаться все, даже те, которые отменены или закончены.
+    @GetMapping("/registrations/my")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    public  ResponseEntity<List<EventDto>> myRegisterEvent () {
+        log.info("REST request All events for which the user is registered");
+        var myRegisterEvent = eventService.myRegisterEvent();
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(myRegisterEvent
+                        .stream()
+                        .map(converterDto::toDto)
+                        .toList());
+    }
+
+//Необходимо учесть статус мероприятия. Нельзя отменить регистрацию, если мероприятие уже началось или закончилось.
+
+    @DeleteMapping("/registrations/cancel/{eventId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    public ResponseEntity<Void> deleteRegisterEvent(
+            @PathVariable(name = "eventId") Long eventId){
+        log.info("REST request to cancelling registration for an event");
+        eventService.deleteRegisterEvent(eventId);
+        return ResponseEntity
+                .status(HttpStatus.NO_CONTENT)
+                .build();
+    }
+}

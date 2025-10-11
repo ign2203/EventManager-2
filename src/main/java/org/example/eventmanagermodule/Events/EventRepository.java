@@ -8,6 +8,7 @@ import org.example.eventmanagermodule.Location.LocationEntity;
 import org.example.eventmanagermodule.User.UserEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
 import java.math.BigDecimal;
@@ -17,19 +18,14 @@ import java.util.List;
 
 public interface EventRepository extends JpaRepository<EventEntity, Long> {
 
-
+    @Lock(LockModeType.PESSIMISTIC_WRITE) // «пессимистическая блокировка на запись».
+    /*
+    Если один пользователь начал транзакцию и заблокировал событие, другой будет ждать.
+    4️⃣ Когда использовать
+Когда есть конкурирующие операции записи, и ты хочешь гарантировать целостность данных.
+В твоём случае: увеличение occupiedPlaces при регистрации нескольких пользователей одновременно.
+     */
     List<EventEntity> findAllByOwnerId(Long ownerId);
-
-//    @Query("""
-//            SELECT bookEntity from BookEntity bookEntity
-//            where (:authorId IS NULL or bookEntity.authorId = :authorId)
-//            and  (:maxCost IS NULL or bookEntity.cost < :maxCost)
-//            """)
-//    List<BookEntity> searchBooks(
-//            Long authorId,
-//            Integer maxCost,
-//            Pageable pageable
-//    );
 
 
     @Query("""
@@ -59,6 +55,5 @@ public interface EventRepository extends JpaRepository<EventEntity, Long> {
             Long locationId,
             EventStatus eventStatus
     );
-
 
 }

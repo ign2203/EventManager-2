@@ -12,7 +12,7 @@ public record Event(
         String name,
         Long ownerId,
         Long locationId,
-        Integer maxPlaces,
+            Integer maxPlaces,
         Integer occupiedPlaces,
         LocalDateTime date,
         BigDecimal cost,

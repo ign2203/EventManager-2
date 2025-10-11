@@ -1,0 +1,32 @@
+package org.example.eventmanagermodule.Events.Registration;
+
+import org.example.eventmanagermodule.Events.EventEntity;
+import org.example.eventmanagermodule.Events.EventStatus;
+import org.example.eventmanagermodule.User.User;
+import org.example.eventmanagermodule.User.UserEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+public interface EventRegistrationRepository extends JpaRepository<EventRegistration, Long> {
+
+    boolean existsByEventEntityAndUserEntity(EventEntity event, UserEntity user);
+
+
+    @Query("""
+           SELECT e.eventEntity FROM EventRegistration e WHERE e.userEntity = :user 
+           """)
+        // установи eventEntity из EventRegistration по фильтру userEntity, который мы передали
+    List<EventEntity> myRegisterEvent(
+            UserEntity user
+    );
+
+    Optional<EventRegistration> findByEventEntityAndUserEntity(EventEntity event, UserEntity user);
+}
+
+
+
