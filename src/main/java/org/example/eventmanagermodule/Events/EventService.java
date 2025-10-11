@@ -137,7 +137,11 @@ public class EventService {
         var eventOwnerId = searchEvent.getOwner().getId();
 
         if (!userRole.equals("ADMIN") && !Objects.equals(ownerId, eventOwnerId)) {
-            throw new AccessDeniedException("Недостаточно прав для удаления мероприятия");
+            throw new AccessDeniedException("Недостаточно прав для обновления мероприятия");
+        }
+
+        if(!searchEvent.getStatus().equals(EventStatus.WAIT_START)) {
+            throw new AccessDeniedException("Невозможно обновить мероприятие, если его статус ОТМЕНЕНО,ЗАВЕРШЕНО,или УЖЕ НАЧАЛОСЬ");
         }
 
         if (!eventUpdateRequestDto.getDate().isAfter(pointInTime)) {
@@ -164,7 +168,7 @@ public class EventService {
                 eventUpdateRequestDto.getDate(),
                 eventUpdateRequestDto.getCost(),
                 eventUpdateRequestDto.getDuration(),
-                EventStatus.WAIT_START
+                searchEvent.getStatus()
         );
         eventRepository.save(eventConverterEntity.toEntity(updatedEvent));
         return updatedEvent;
