@@ -3,9 +3,9 @@ package org.example.eventmanagermodule.security.jwt;
 import jakarta.validation.Valid;
 import org.example.eventmanagermodule.User.User;
 import org.example.eventmanagermodule.User.UserLoginRequest;
+import org.example.eventmanagermodule.User.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,12 +13,13 @@ public class AuthenticationService {
 
     private final JwtTokenManager jwtTokenManager;
     private final AuthenticationManager authenticationManager;
+    private final UserService userService;
 
-    public AuthenticationService(JwtTokenManager jwtTokenManager, AuthenticationManager authenticationManager) {
+    public AuthenticationService(JwtTokenManager jwtTokenManager, AuthenticationManager authenticationManager, UserService userService) {
         this.jwtTokenManager = jwtTokenManager;
         this.authenticationManager = authenticationManager;
+        this.userService = userService;
     }
-
 
     public String authenticateUser(
             @Valid UserLoginRequest userLoginRequest) {
@@ -26,17 +27,7 @@ public class AuthenticationService {
                 userLoginRequest.login(),
                 userLoginRequest.password()
         ));
-        return jwtTokenManager.generateToken(userLoginRequest.login());
-    }
-
-
-    public User getCurrentAuthenticatedUserOrThrow() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null) {
-            throw new IllegalStateException("Authentication Failed");
-        }
-        return (User) authentication.
-                getPrincipal();
+        User user = userService.findByLogin(userLoginRequest.login());
+        return jwtTokenManager.generateToken(user.login(), user.role());
     }
 }

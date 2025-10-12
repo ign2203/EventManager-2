@@ -8,18 +8,16 @@ public record LocationDto(
 
         @Null
         Long id,
-
-        @Size(min = 1)
-        @NotBlank(message = "Location name should be not blank")
+        @Size(max = 100, message = "Name must not exceed 100 characters")
+        @NotBlank(message = "Name cannot be blank")
         String name,
-
-        @NotBlank(message = "Location address should be not blank")
+        @NotBlank(message = "Address cannot be blank")
+        @Size(max = 255, message = "Address must not exceed 255 characters")
         String address,
-
-        @Min(value = 5, message = "Minimum capacity of location is 5")
+        @Min(value = 5, message = "Capacity must be at least 5")
         @NotNull
         Integer capacity,
-
+        @Size(max = 1000, message = "Description must not exceed 1000 characters")
         String description
 ) {
 }

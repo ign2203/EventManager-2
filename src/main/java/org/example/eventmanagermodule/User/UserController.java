@@ -33,7 +33,7 @@ public class UserController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new UserResponseDto(
-                        createdUser.Id(),
+                        createdUser.id(),
                         createdUser.login(),
                         createdUser.age(),
                         UserRole.USER
@@ -49,7 +49,7 @@ public class UserController {
                 ResponseEntity
                         .status(HttpStatus.OK)
                         .body(new UserResponseDto(
-                                findUser.Id(),
+                                findUser.id(),
                                 findUser.login(),
                                 findUser.age(),
                                 findUser.role()

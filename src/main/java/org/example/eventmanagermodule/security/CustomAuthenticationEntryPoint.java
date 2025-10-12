@@ -1,7 +1,6 @@
 package org.example.eventmanagermodule.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.eventmanagermodule.Location.ErrorMessageResponse;
@@ -30,17 +29,14 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException)
-            throws IOException, ServletException {
-
-        log.error("Handling Authentication exception");
-
+            throws IOException {
+        log.info("Handling Authentication exception");
         var message = new ErrorMessageResponse(
                 "Failed to authenticate",
                 authException.getMessage(),
                 LocalDateTime.now()
         );
         var jsonMessage = objectMapper.writeValueAsString(message);
-
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.getWriter().write(jsonMessage);

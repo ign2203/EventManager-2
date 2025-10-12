@@ -1,7 +1,6 @@
 package org.example.eventmanagermodule.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.example.eventmanagermodule.Location.ErrorMessageResponse;
@@ -29,9 +28,8 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             HttpServletRequest request,
             HttpServletResponse response,
             AccessDeniedException accessDeniedException)
-            throws IOException, ServletException {
+            throws IOException {
         log.error("Handling Access denied authenticate ", accessDeniedException);
-
         var messageError = new ErrorMessageResponse(
                 "FORBIDDEN",
                 accessDeniedException.getMessage(),

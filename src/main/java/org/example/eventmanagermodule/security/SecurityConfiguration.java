@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.security;
 
-
 import org.example.eventmanagermodule.security.jwt.JwtTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -12,6 +11,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,7 +20,6 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 
 @Configuration
 @EnableMethodSecurity
-
 public class SecurityConfiguration {
 
     @Autowired
@@ -32,15 +31,14 @@ public class SecurityConfiguration {
     @Autowired
     private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
-
     @Autowired//403
     private CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
-    public org.example.eventmanagermodule.security.SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .formLogin(login -> login.disable())
-                .csrf(csrf -> csrf.disable())
+                .formLogin(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -77,12 +75,10 @@ public class SecurityConfiguration {
                 .build();
     }
 
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
-
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -92,10 +88,8 @@ public class SecurityConfiguration {
         return authProvider;
     }
 
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
