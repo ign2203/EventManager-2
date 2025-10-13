@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.Events;
 
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,7 +10,6 @@ import java.util.List;
 
 @Component
 public class EventStatusScheduler {
-
     private final EventRepository eventRepository;
     private final static Logger log = LoggerFactory.getLogger(EventService.class);
 
@@ -19,10 +17,8 @@ public class EventStatusScheduler {
         this.eventRepository = eventRepository;
     }
 
-
     @Scheduled(fixedRate = 60000)
     public void updateEventStatuses() {
-
         List<EventEntity> events = eventRepository.findAll();
         for (EventEntity event : events) {
             if (event.getStatus() != EventStatus.CLOSED) {
@@ -36,8 +32,6 @@ public class EventStatusScheduler {
                     event.setStatus(EventStatus.FINISHED);
                 }
             }
-//            log.info("Event {} | start={} | end={} | now={} | status={}",
-//                    event.getId(), event.getDate(), endTime, now, event.getStatus());
         }
         eventRepository.saveAll(events);
     }

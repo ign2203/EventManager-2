@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.Events.Converter;
 
-
 import org.example.eventmanagermodule.Events.Event;
 import org.example.eventmanagermodule.Events.EventEntity;
 import org.example.eventmanagermodule.Location.LocationEntity;
@@ -9,8 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EventConverterEntity {
-
-    public Event toDomain (EventEntity entity) {
+    public Event toDomain(EventEntity entity) {
 
         return new Event(
                 entity.getId(),
@@ -26,13 +24,11 @@ public class EventConverterEntity {
         );
     }
 
-    public EventEntity toEntity (Event domain) {
+    public EventEntity toEntity(Event domain) {
         var user = new UserEntity();
         user.setId(domain.ownerId());
-
         var location = new LocationEntity();
         location.setId(domain.locationId());
-
         return new EventEntity(
                 domain.id(),
                 domain.name(),

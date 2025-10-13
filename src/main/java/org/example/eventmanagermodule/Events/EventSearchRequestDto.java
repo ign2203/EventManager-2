@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.Events;
 
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.annotation.Nullable;
@@ -18,12 +17,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EventSearchRequestDto {
-
-
     private String name;
     @Min(value = 5, message = "plaseMin - min = 5")
     private Integer placesMin;
-
     @Min(5)
     @Nullable
     private Integer placesMax;
@@ -33,14 +29,12 @@ public class EventSearchRequestDto {
     private LocalDateTime dateStartBefore;
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal costMin;
-
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal costMax;
     @Min(30)
     private Integer durationMin;
     @Min(30)
     private Integer durationMax;
-
     private Long locationId;
     private EventStatus status;
 }

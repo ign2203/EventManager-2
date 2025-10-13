@@ -6,8 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EventConverterDto {
-
-    public EventDto toDto(Event eventDomain){
+    public EventDto toDto(Event eventDomain) {
         return new EventDto(
                 eventDomain.id(),
                 eventDomain.name(),

@@ -16,32 +16,24 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 public class EventDto {
-
     private Long id;
-
     @NotBlank
     private String name;
-
     @NotNull
     private Long ownerId;
-
     @NotNull
     private Long locationId;
-
     @Min(0)
     @NotNull
     private Integer maxPlaces;
-
     @Min(0)
     @NotNull
     private Integer occupiedPlaces;
-
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime date;
     @DecimalMin(value = "0.0", inclusive = true)
     private BigDecimal cost;
     @Min(30)
     private Integer duration;
-
     private EventStatus status;
 }

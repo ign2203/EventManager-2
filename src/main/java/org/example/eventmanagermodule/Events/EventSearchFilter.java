@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.Events;
 
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -17,6 +16,4 @@ public record EventSearchFilter(
         Long locationId,
         EventStatus status
 ) {
-
-
 }
