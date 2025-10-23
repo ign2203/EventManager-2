@@ -136,4 +136,15 @@ public class EventController {
                 .status(HttpStatus.NO_CONTENT)
                 .build();
     }
+    @PatchMapping("/{eventId}/status/closed")
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    public ResponseEntity<Void> patchEventStatus(
+            @PathVariable(name = "eventId") Long eventId) {
+        log.info("requested to set status CLOSED for event with ID {}",eventId);
+        eventService.closeEvent(eventId);
+        log.info("Event with ID {} successfully updated to status CLOSED", eventId);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .build();// думаю может в запросе вернуть результат EventStatusChangeNotification
+    }
 }

@@ -10,6 +10,8 @@ import org.example.eventmanagermodule.User.User;
 import org.example.eventmanagermodule.User.UserEntity;
 import org.example.eventmanagermodule.User.UserRepository;
 import org.example.eventmanagermodule.User.UserService;
+import org.example.eventmanagermodule.eventmanager.*;
+import org.example.eventmanagermodule.eventmanager.status.EventStatusChangeNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,8 +38,9 @@ public class EventService {
     private final UserService userService;
     private final EventRegistrationRepository eventRegistrationRepository;
     private final UserRepository userRepository;
+    private final EventProducerService eventProducerService;
 
-    public EventService(@Value("${event.date.min}") String pointInTimeStr, LocationRepository locationRepository, EventRepository eventRepository, EventConverterEntity eventConverterEntity, UserService userService, EventRegistrationRepository eventRegistrationRepository, UserRepository userRepository) {
+    public EventService(@Value("${event.date.min}") String pointInTimeStr, LocationRepository locationRepository, EventRepository eventRepository, EventConverterEntity eventConverterEntity, UserService userService, EventRegistrationRepository eventRegistrationRepository, UserRepository userRepository, EventProducerService eventProducerService) {
         this.pointInTime = LocalDateTime.parse(pointInTimeStr);
         this.locationRepository = locationRepository;
         this.eventRepository = eventRepository;
@@ -45,6 +48,7 @@ public class EventService {
         this.userService = userService;
         this.eventRegistrationRepository = eventRegistrationRepository;
         this.userRepository = userRepository;
+        this.eventProducerService = eventProducerService;
     }
 
     public Event postCreateEvent(EventCreateRequestDto eventCreateRequestDto) {
@@ -102,18 +106,9 @@ public class EventService {
 
     public Event putUpdateEvent(Long eventId,
                                 EventUpdateRequestDto eventUpdateRequestDto) {
-        EventEntity searchEvent = eventRepository.findById(eventId)
-                .orElseThrow(() -> new EntityNotFoundException("Event with id " + eventId + " not found"));
+        var searchEvent =  getAuthorizedEvent(eventId);
         User currentUser = getCurrentUser();
         Long ownerId = currentUser.id();
-        String userRole = currentUser.role().name();
-        Long eventOwnerId = searchEvent.getOwner().getId();
-        if (!userRole.equals("ADMIN") && !Objects.equals(ownerId, eventOwnerId)) {
-            throw new AccessDeniedException("Недостаточно прав для обновления мероприятия");
-        }
-        if (!searchEvent.getStatus().equals(EventStatus.WAIT_START)) {
-            throw new AccessDeniedException("Невозможно обновить мероприятие, если его статус ОТМЕНЕНО,ЗАВЕРШЕНО,или УЖЕ НАЧАЛОСЬ");
-        }
         if (!eventUpdateRequestDto.getDate().isAfter(pointInTime)) {
             throw new IllegalArgumentException(
                     String.format("Дата мероприятия должна быть позже %s", pointInTime.toLocalDate())
@@ -137,7 +132,23 @@ public class EventService {
                 eventUpdateRequestDto.getDuration(),
                 searchEvent.getStatus()
         );
+        FieldChangeString nameChange = new  FieldChangeString(searchEvent.getName(),updatedEvent.name());
+        FieldChangeInteger maxPlacesChange = new FieldChangeInteger(searchEvent.getMaxPlaces(), updatedEvent.maxPlaces());
+        FieldChangeDateTime dateChange = new FieldChangeDateTime(searchEvent.getDate(),updatedEvent.date());
+        FieldChangeDecimal costChange = new FieldChangeDecimal(searchEvent.getCost(),updatedEvent.cost());
+        FieldChangeInteger durationChange = new FieldChangeInteger(searchEvent.getDuration(),updatedEvent.duration());
+        FieldChangeLong locationIdChange = new FieldChangeLong(searchEvent.getLocation().getId(),updatedEvent.locationId());
+        EventChangeNotification notification = new EventChangeNotification(// забыл добавить конструктор
+                updatedEvent.id(),
+                nameChange,
+                maxPlacesChange,
+                dateChange,
+                costChange,
+                durationChange,
+                locationIdChange
+        );
         eventRepository.save(eventConverterEntity.toEntity(updatedEvent));
+        eventProducerService.sendEventChange(notification);
         return updatedEvent;
     }
 
@@ -248,12 +259,43 @@ public class EventService {
         eventRepository.save(searchEvent);
     }
 
-    private User getCurrentUser() {
+
+    @Transactional
+    public void closeEvent(Long eventId) {
+       EventEntity searchEvent =  getAuthorizedEvent(eventId);
+        EventStatus oldStatus = searchEvent.getStatus();
+        searchEvent.setStatus(EventStatus.CLOSED);
+        EventStatusChangeNotification  eventStatusChangeNotification = new EventStatusChangeNotification(
+                searchEvent.getId(),
+                oldStatus,
+                EventStatus.CLOSED
+        );
+        eventRepository.save(searchEvent);
+        eventProducerService.sendStatusChangeNotification(eventStatusChangeNotification);
+    }
+
+    private  User getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new IllegalStateException("Пользователь не аутентифицирован");
         }
         String username = authentication.getName(); // loginFromToken
         return userService.findByLogin(username);
+    }
+
+    private EventEntity getAuthorizedEvent(Long eventId) {
+        EventEntity searchEvent = eventRepository.findById(eventId)
+                .orElseThrow(() -> new EntityNotFoundException("Event with id " + eventId + " not found"));
+        User currentUser = getCurrentUser();
+        Long ownerId = currentUser.id();
+        String userRole = currentUser.role().name();
+        Long eventOwnerId = searchEvent.getOwner().getId();//id пользователя кто создал мероприятие
+        if (!userRole.equals("ADMIN") && !Objects.equals(ownerId, eventOwnerId)) {
+            throw new AccessDeniedException("Недостаточно прав для обновления мероприятия");
+        }
+        if (!searchEvent.getStatus().equals(EventStatus.WAIT_START)) {
+            throw new AccessDeniedException("Изменение статуса невозможно: мероприятие уже началось или завершено.");
+        }
+        return searchEvent;
     }
 }
