@@ -1,4 +1,4 @@
-package org.example.eventmanagermodule.eventmanager.status;
+package org.example.eventmanagermodule.producer.status;
 
 import org.example.eventmanagermodule.Events.EventStatus;
 

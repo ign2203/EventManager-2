@@ -1,4 +1,4 @@
-package org.example.eventmanagermodule.eventmanager;
+package org.example.eventmanagermodule.producer;
 
 import java.time.LocalDateTime;
 

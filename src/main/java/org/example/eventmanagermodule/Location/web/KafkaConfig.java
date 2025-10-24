@@ -1,8 +1,8 @@
 package org.example.eventmanagermodule.Location.web;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.LongDeserializer;
-import org.example.eventmanagermodule.eventmanager.EventChangeNotification;
-import org.example.eventmanagermodule.eventmanager.status.EventStatusChangeNotification;
+import org.example.eventmanagermodule.producer.EventChangeNotification;
+import org.example.eventmanagermodule.producer.status.EventStatusChangeNotification;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.ssl.DefaultSslBundleRegistry;
 import org.springframework.context.annotation.Bean;

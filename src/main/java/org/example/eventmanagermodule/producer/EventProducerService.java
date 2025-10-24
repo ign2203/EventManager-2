@@ -1,5 +1,5 @@
-package org.example.eventmanagermodule.eventmanager;
-import org.example.eventmanagermodule.eventmanager.status.EventStatusChangeNotification;
+package org.example.eventmanagermodule.producer;
+import org.example.eventmanagermodule.producer.status.EventStatusChangeNotification;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

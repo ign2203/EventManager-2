@@ -1,7 +1,7 @@
 package org.example.eventmanagermodule.Events;
 
-import org.example.eventmanagermodule.eventmanager.EventProducerService;
-import org.example.eventmanagermodule.eventmanager.status.EventStatusChangeNotification;
+import org.example.eventmanagermodule.producer.EventProducerService;
+import org.example.eventmanagermodule.producer.status.EventStatusChangeNotification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

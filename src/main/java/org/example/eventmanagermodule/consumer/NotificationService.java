@@ -6,8 +6,8 @@ import org.example.eventmanagermodule.Events.Registration.EventRegistrationServi
 import org.example.eventmanagermodule.User.User;
 import org.example.eventmanagermodule.User.UserEntity;
 import org.example.eventmanagermodule.User.UserService;
-import org.example.eventmanagermodule.eventmanager.EventChangeNotification;
-import org.example.eventmanagermodule.eventmanager.status.EventStatusChangeNotification;
+import org.example.eventmanagermodule.producer.EventChangeNotification;
+import org.example.eventmanagermodule.producer.status.EventStatusChangeNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
