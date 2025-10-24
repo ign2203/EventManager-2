@@ -2,6 +2,10 @@ package org.example.eventmanagermodule.Events;
 
 import jakarta.validation.Valid;
 import org.example.eventmanagermodule.Events.Converter.EventConverterDto;
+import org.example.eventmanagermodule.Events.dto.EventCreateRequestDto;
+import org.example.eventmanagermodule.Events.dto.EventDto;
+import org.example.eventmanagermodule.Events.dto.EventSearchRequestDto;
+import org.example.eventmanagermodule.Events.dto.EventUpdateRequestDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -25,7 +29,7 @@ public class EventController {
 
     @PostMapping()
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public ResponseEntity<EventDto> postCreateEvent(
+    public ResponseEntity<EventDto> createEvent(
             @RequestBody @Valid EventCreateRequestDto eventCreateRequestDto) {
         log.info("REST request to save Event : {}", eventCreateRequestDto);
         Event eventDomain = eventService.postCreateEvent(eventCreateRequestDto);
@@ -37,7 +41,7 @@ public class EventController {
 
     @DeleteMapping("/{eventId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public ResponseEntity<Void> deleteEvent
+    public ResponseEntity<Void> deleteEventById
             (@PathVariable(name = "eventId") Long eventId) {
         log.info("REST request to delete Event : {}", eventId);
         eventService.deleteEvent(eventId);
@@ -49,7 +53,7 @@ public class EventController {
 
     @GetMapping("/{eventId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public ResponseEntity<EventDto> getEvent(
+    public ResponseEntity<EventDto> getEventById(
             @PathVariable(name = "eventId") Long eventId) {
         log.info("REST request to get Event : {}", eventId);
         Event searchEventDomain = eventService.getEvent(eventId);
@@ -61,7 +65,7 @@ public class EventController {
 
     @PutMapping("/{eventId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public ResponseEntity<EventDto> putUpdateEvent(
+    public ResponseEntity<EventDto> updateEvent(
             @PathVariable(name = "eventId") Long eventId,
             @RequestBody @Valid EventUpdateRequestDto eventUpdateRequestDto) {
         log.info("REST request to update Event: {}", eventUpdateRequestDto);
@@ -74,7 +78,7 @@ public class EventController {
 
     @GetMapping("/my")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public ResponseEntity<List<EventDto>> getMyEvent() {
+    public ResponseEntity<List<EventDto>> getCurrentUserEvents() {
         log.info("REST request to get My Events");
         List<Event> myEventDomain = eventService.getMyEvent();
         List<EventDto> eventDtoList = myEventDomain
@@ -88,7 +92,7 @@ public class EventController {
 
     @PostMapping("/search")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public ResponseEntity<List<EventDto>> getSearchEvent(
+    public ResponseEntity<List<EventDto>> searchEvents(
             @Valid EventSearchRequestDto eventSearchRequestDto) {
         log.info("REST request to get Search all events by filter : {}", eventSearchRequestDto);
         List<Event> searchEventDomain = eventService.getSearchEvent(eventSearchRequestDto);
@@ -101,7 +105,7 @@ public class EventController {
 
     @PostMapping("/registrations/{eventId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public ResponseEntity<EventDto> postRegisterEvent(
+    public ResponseEntity<EventDto> getCurrentUserRegistrations(
             @PathVariable(name = "eventId") Long eventId) {
         log.info("REST request to register Event : {}", eventId);
         Event registerEvent = eventService.postRegisterEvent(eventId);
@@ -127,7 +131,7 @@ public class EventController {
 
     @DeleteMapping("/registrations/cancel/{eventId}")
     @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    public ResponseEntity<Void> deleteRegisterEvent(
+    public ResponseEntity<Void> cancelEventRegistration(
             @PathVariable(name = "eventId") Long eventId) {
         log.info("REST request to cancelling registration for an event");
         eventService.deleteRegisterEvent(eventId);

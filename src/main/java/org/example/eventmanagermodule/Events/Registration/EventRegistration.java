@@ -1,6 +1,7 @@
 package org.example.eventmanagermodule.Events.Registration;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,6 +27,7 @@ public class EventRegistration {
     EventEntity eventEntity;
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id", nullable = false)
+    @NotNull(message = "UserEntity не может быть null")
     UserEntity userEntity;
     private LocalDateTime registeredAt;
 
