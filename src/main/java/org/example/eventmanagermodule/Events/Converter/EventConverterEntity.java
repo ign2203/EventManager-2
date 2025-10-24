@@ -9,12 +9,22 @@ import org.springframework.stereotype.Component;
 @Component
 public class EventConverterEntity {
     public Event toDomain(EventEntity entity) {
-
+        if (entity == null) {
+            throw new IllegalArgumentException("EventEntity не может быть null");
+        }
+        Long ownerId = null;
+        if (entity.getOwner() != null) {
+            ownerId = entity.getOwner().getId();
+        }
+        Long locationId = null;
+        if (entity.getLocation() != null) {
+            locationId = entity.getLocation().getId();
+        }
         return new Event(
                 entity.getId(),
                 entity.getName(),
-                entity.getOwner() != null ? entity.getOwner().getId() : null,
-                entity.getLocation() != null ? entity.getLocation().getId() : null,
+                ownerId,
+                locationId,
                 entity.getMaxPlaces(),
                 entity.getOccupiedPlaces(),
                 entity.getDate(),
@@ -23,17 +33,25 @@ public class EventConverterEntity {
                 entity.getStatus()
         );
     }
-
     public EventEntity toEntity(Event domain) {
-        var user = new UserEntity();
-        user.setId(domain.ownerId());
-        var location = new LocationEntity();
-        location.setId(domain.locationId());
+        if (domain == null) {
+            throw new IllegalArgumentException("EventDomain не может быть null");
+        }
+        UserEntity user = null;
+        if ((domain.ownerId() != null)) {
+            user = new UserEntity();
+            user.setId(domain.ownerId());
+        }
+        LocationEntity locationEntity = null;
+        if ((domain.locationId() != null)) {
+            locationEntity = new LocationEntity();
+            locationEntity.setId(domain.locationId());
+        }
         return new EventEntity(
                 domain.id(),
                 domain.name(),
                 user,
-                location,
+                locationEntity,
                 domain.maxPlaces(),
                 domain.occupiedPlaces(),
                 domain.date(),

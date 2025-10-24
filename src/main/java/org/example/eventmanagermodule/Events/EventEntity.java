@@ -3,6 +3,7 @@ package org.example.eventmanagermodule.Events;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,7 @@ public class EventEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "name")
+    @Size(min = 4, max = 32, message = "Event name must be between 4 and 32 characters")
     private String name;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

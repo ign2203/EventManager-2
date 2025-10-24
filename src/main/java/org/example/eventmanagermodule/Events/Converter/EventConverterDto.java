@@ -1,7 +1,7 @@
 package org.example.eventmanagermodule.Events.Converter;
 
 import org.example.eventmanagermodule.Events.Event;
-import org.example.eventmanagermodule.Events.EventDto;
+import org.example.eventmanagermodule.Events.dto.EventDto;
 import org.springframework.stereotype.Component;
 
 @Component
