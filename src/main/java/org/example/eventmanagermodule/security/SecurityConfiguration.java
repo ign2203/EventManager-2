@@ -17,6 +17,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
@@ -64,14 +65,42 @@ public class SecurityConfiguration {
 
                                 .requestMatchers(HttpMethod.POST, "/users/auth")
                                 .permitAll()
+
+                                .requestMatchers(HttpMethod.POST, "/events")
+                                .hasAnyAuthority("ADMIN", "USER")
+
+                                .requestMatchers(HttpMethod.DELETE, "/events/**")
+                                .hasAnyAuthority("ADMIN", "USER")
+
+                                .requestMatchers(HttpMethod.GET, "/events/**")
+                                .hasAnyAuthority("ADMIN", "USER")
+
+                                .requestMatchers(HttpMethod.GET, "/events/my")
+                                .hasAnyAuthority("ADMIN", "USER")
+
+                                .requestMatchers(HttpMethod.POST, "/search")
+                                .hasAnyAuthority("ADMIN", "USER")
+
+                                .requestMatchers(HttpMethod.POST, "/registrations/**")
+                                .hasAnyAuthority("ADMIN", "USER")
+
+                                .requestMatchers(HttpMethod.GET, "/registrations/my")
+                                .hasAnyAuthority("ADMIN", "USER")
+
+                                .requestMatchers(HttpMethod.DELETE, "/registrations/cancel/**")
+                                .hasAnyAuthority("ADMIN", "USER")
+
                                 .anyRequest().authenticated()
+
+
+
                 )
                 .exceptionHandling(exception ->
                         exception
                                 .authenticationEntryPoint(customAuthenticationEntryPoint)
                                 .accessDeniedHandler(customAccessDeniedHandler)
                 )
-                .addFilterBefore(jwtTokenFilter, AnonymousAuthenticationFilter.class)
+                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
