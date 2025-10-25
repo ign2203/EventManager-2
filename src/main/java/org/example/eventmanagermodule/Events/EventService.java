@@ -14,6 +14,7 @@ import org.example.eventmanagermodule.User.User;
 import org.example.eventmanagermodule.User.UserEntity;
 import org.example.eventmanagermodule.User.UserRepository;
 import org.example.eventmanagermodule.User.UserService;
+import org.example.eventmanagermodule.producer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,9 +24,11 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+
 import static java.time.LocalDateTime.now;
 
 @Service
@@ -38,19 +41,21 @@ public class EventService {
     private final UserService userService;
     private final EventRegistrationRepository eventRegistrationRepository;
     private final UserRepository userRepository;
+    private final EventProducerService eventProducerService;
 
     public EventService(LocationRepository locationRepository,
                         EventRepository eventRepository,
                         EventConverterEntity eventConverterEntity,
                         UserService userService,
                         EventRegistrationRepository eventRegistrationRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository, EventProducerService eventProducerService) {
         this.locationRepository = locationRepository;
         this.eventRepository = eventRepository;
         this.eventConverterEntity = eventConverterEntity;
         this.userService = userService;
         this.eventRegistrationRepository = eventRegistrationRepository;
         this.userRepository = userRepository;
+        this.eventProducerService = eventProducerService;
     }
 
     public Event postCreateEvent(EventCreateRequestDto eventCreateRequestDto) {
@@ -127,10 +132,24 @@ public class EventService {
                 eventUpdateRequestDto.getDuration(),
                 searchEvent.getStatus()
         );
-        Long userId = getCurrentUser().id();
-        log.info("User id={} is updating event '{}' at location id={}", userId, updatedEvent.name(), updatedEvent.locationId());
+        FieldChangeString nameChange = new FieldChangeString(searchEvent.getName(), updatedEvent.name()); // что IDea не нравится в этой части кода?
+        // она предлагает создать метод,но мне от него не лучше
+        FieldChangeInteger maxPlacesChange = new FieldChangeInteger(searchEvent.getMaxPlaces(), updatedEvent.maxPlaces());
+        FieldChangeDateTime dateChange = new FieldChangeDateTime(searchEvent.getDate(), updatedEvent.date());
+        FieldChangeDecimal costChange = new FieldChangeDecimal(searchEvent.getCost(), updatedEvent.cost());
+        FieldChangeInteger durationChange = new FieldChangeInteger(searchEvent.getDuration(), updatedEvent.duration());
+        FieldChangeLong locationIdChange = new FieldChangeLong(searchEvent.getLocation().getId(), updatedEvent.locationId());
+        EventChangeNotification notification = new EventChangeNotification(// забыл добавить конструктор
+                updatedEvent.id(),
+                nameChange,
+                maxPlacesChange,
+                dateChange,
+                costChange,
+                durationChange,
+                locationIdChange
+        );
         eventRepository.save(eventConverterEntity.toEntity(updatedEvent));
-        log.info("Event '{}' (id={}) successfully updated by user id={}", updatedEvent.name(), updatedEvent.id(), userId);
+        eventProducerService.sendEventChange(notification);
         return updatedEvent;
     }
 
