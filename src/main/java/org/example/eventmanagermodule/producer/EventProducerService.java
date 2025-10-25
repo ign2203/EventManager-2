@@ -34,6 +34,7 @@ public class EventProducerService {
                     sendResult.getRecordMetadata().partition(),
                     sendResult.getRecordMetadata().offset()
             );
-        });
+        }
+        );
     }
 }
