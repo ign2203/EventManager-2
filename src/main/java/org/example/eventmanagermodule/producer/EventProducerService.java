@@ -26,15 +26,14 @@ public class EventProducerService {
                 notification.eventId,
                 notification
         );
-        result.thenAccept(sendResult -> {
-            log.info(
-                    "Event change for eventId={} successfully sent to topic='{}', partition={}, offset={}",
-                    notification.eventId,
-                    "event-topic",
-                    sendResult.getRecordMetadata().partition(),
-                    sendResult.getRecordMetadata().offset()
-            );
-        }
+        result.thenAccept(sendResult ->
+                log.info(
+                        "Event change for eventId={} successfully sent to topic='{}', partition={}, offset={}",
+                        notification.eventId,
+                        "event-topic",
+                        sendResult.getRecordMetadata().partition(),
+                        sendResult.getRecordMetadata().offset()
+                )
         );
     }
 }
