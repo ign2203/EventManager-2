@@ -1,4 +1,5 @@
 package org.example.eventmanagermodule.consumer;
+
 import org.example.eventmanagermodule.producer.EventChangeNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,15 +29,16 @@ public class NotificationController {
                 .status(HttpStatus.OK)
                 .body(notification);
     }
-@PostMapping
-@PreAuthorize("hasAnyAuthority('ADMIN','USER')")
-    ResponseEntity <?> markAsRead (@RequestBody NotificationReadRequest request) {
+
+    @PostMapping
+    @PreAuthorize("hasAnyAuthority('ADMIN','USER')")
+    ResponseEntity<?> markAsRead(@RequestBody NotificationReadRequest request) {
         log.info("REST request to mark as read user notification");
         notificationService.markAsRead(request.getNotificationIds());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .build();
-}
+    }
 }
 
 

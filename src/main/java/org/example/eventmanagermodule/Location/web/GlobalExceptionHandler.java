@@ -2,6 +2,7 @@ package org.example.eventmanagermodule.Location.web;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ValidationException;
 import org.example.eventmanagermodule.Location.ErrorMessageResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,17 +21,17 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
     private final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler(IllegalArgumentException.class)
+    @ExceptionHandler({IllegalArgumentException.class, ValidationException.class})
     public ResponseEntity<ErrorMessageResponse> handleValidationException(Exception e, HttpServletRequest request) {
-        String detailedMessage = e instanceof MethodArgumentNotValidException
-                ?
-                constructMethodArgumentNotValid((MethodArgumentNotValidException) e)
-                :
-                e.getMessage();
-        log.warn("400 BAD_REQUEST at {}: {}", request.getRequestURI(), detailedMessage);
+        String detailedMessage;
+        if (e instanceof MethodArgumentNotValidException ex) {
+            detailedMessage = constructMethodArgumentNotValid(ex);
+        } else {
+            detailedMessage = e.getMessage();
+        }
+        log.warn("400 BAD_REQUEST at {} caused by {}: {}", request.getRequestURI(), e.getClass().getSimpleName(), detailedMessage);
         return buildErrorResponse(request, HttpStatus.BAD_REQUEST, detailedMessage);
     }
-
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<ErrorMessageResponse> handleUsernameNotFoundException(Exception e, HttpServletRequest request) {
         log.warn("401 UNAUTHORIZED at {}: {}", request.getRequestURI(), e.getMessage());

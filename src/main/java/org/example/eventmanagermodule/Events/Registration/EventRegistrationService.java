@@ -1,6 +1,5 @@
 package org.example.eventmanagermodule.Events.Registration;
 
-import org.example.eventmanagermodule.User.User;
 import org.example.eventmanagermodule.User.UserEntity;
 import org.springframework.stereotype.Service;
 

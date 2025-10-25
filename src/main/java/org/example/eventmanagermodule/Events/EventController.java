@@ -149,6 +149,6 @@ public class EventController {
         log.info("Event with ID {} successfully updated to status CLOSED", eventId);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .build();// думаю может в запросе вернуть результат EventStatusChangeNotification
+                .build();
     }
 }

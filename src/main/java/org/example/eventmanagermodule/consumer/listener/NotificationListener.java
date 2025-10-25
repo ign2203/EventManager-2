@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.example.eventmanagermodule.consumer.NotificationService;
 import org.example.eventmanagermodule.producer.EventChangeNotification;
-import org.example.eventmanagermodule.producer.status.EventStatusChangeNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -23,12 +22,6 @@ public class NotificationListener {
         logRecord(record);
         EventChangeNotification event = objectMapper.readValue(record.value(), EventChangeNotification.class);
         notificationService.handleNotification(event);
-    }
-    @KafkaListener(topics = "event-status-topic", groupId = "status-notificator-group")
-    public void listenStatusChangeNotification (ConsumerRecord<Long, String> record) throws JsonProcessingException {
-        logRecord(record);
-        EventStatusChangeNotification notification = objectMapper.readValue(record.value(), EventStatusChangeNotification.class);
-        notificationService.processEventStatusChange(notification);
     }
     private void logRecord(ConsumerRecord<Long, String> record) {
         if (record.value() == null) {
