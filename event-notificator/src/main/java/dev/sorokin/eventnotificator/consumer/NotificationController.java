@@ -1,6 +1,6 @@
-package org.example.eventmanagermodule.consumer;
+package dev.sorokin.eventnotificator.consumer;
 
-import org.example.eventmanagermodule.producer.EventChangeNotification;
+import dev.sorokin.eventnotificator.consumer.fieldChange.EventChangeNotification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

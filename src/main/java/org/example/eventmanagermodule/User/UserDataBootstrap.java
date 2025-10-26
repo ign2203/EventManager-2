@@ -10,12 +10,10 @@ import org.springframework.stereotype.Component;
 public class UserDataBootstrap {
 
     private final UserRepository userRepository;
-    private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserDataBootstrap(UserRepository userRepository, UserService userService, PasswordEncoder passwordEncoder) {
+    public UserDataBootstrap(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.userService = userService;
         this.passwordEncoder = passwordEncoder;
     }
 

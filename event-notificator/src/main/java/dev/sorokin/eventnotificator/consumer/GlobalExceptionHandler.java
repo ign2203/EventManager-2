@@ -1,9 +1,9 @@
-package org.example.eventmanagermodule.Location.web;
+package dev.sorokin.eventnotificator.consumer;
 
+import dev.sorokin.eventnotificator.consumer.security.ErrorMessageResponse;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
-import org.example.eventmanagermodule.Location.ErrorMessageResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -33,6 +33,7 @@ public class GlobalExceptionHandler {
         log.warn("400 BAD_REQUEST at {} caused by {}: {}", request.getRequestURI(), e.getClass().getSimpleName(), detailedMessage);
         return buildErrorResponse(request, HttpStatus.BAD_REQUEST, detailedMessage);
     }
+
     @ExceptionHandler({UsernameNotFoundException.class, AuthenticationCredentialsNotFoundException.class})
     public ResponseEntity<ErrorMessageResponse> handleUsernameNotFoundException(Exception e, HttpServletRequest request) {
         log.warn("401 UNAUTHORIZED at {}: {}", request.getRequestURI(), e.getMessage());
@@ -47,7 +48,7 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(request, HttpStatus.NOT_FOUND, detailedMessage);
     }
 
-    @ExceptionHandler (DataIntegrityViolationException.class)
+    @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorMessageResponse> handleDataIntegrityViolationException(DataIntegrityViolationException e, HttpServletRequest request) {
         log.warn("409 CONFLICT at {}: {}", request.getRequestURI(), e.getMessage());// не уверен в статусе 500, не понял когда прилетает DataIntegrityViolationException
         String detailedMessage = e.getMessage();

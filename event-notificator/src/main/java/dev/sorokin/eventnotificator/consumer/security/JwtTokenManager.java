@@ -1,14 +1,14 @@
-package org.example.eventmanagermodule.security.jwt;
+package dev.sorokin.eventnotificator.consumer.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.example.eventmanagermodule.User.UserRole;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.util.Date;
+import java.nio.charset.StandardCharsets;
+
 
 @Component
 public class JwtTokenManager {
@@ -19,20 +19,8 @@ public class JwtTokenManager {
             @Value("${jwt.secretKey}") String keyString,
             @Value("${jwt.lifetime}") Long expirationTime
     ) {
-        this.key = Keys.hmacShaKeyFor(keyString.getBytes());
+        this.key = Keys.hmacShaKeyFor(keyString.getBytes(StandardCharsets.UTF_8));
         this.expirationTime = expirationTime;
-    }
-
-    public String generateToken(Long userId, String login, UserRole role) {
-        return Jwts
-                .builder()
-                .subject(login)
-                .issuedAt(new Date())
-                .claim("userId", userId)
-                .claim("role", role.toString())
-                .expiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(key)
-                .compact();
     }
 
     public String getLoginFromToken(String token) {
@@ -48,6 +36,11 @@ public class JwtTokenManager {
     public String getRoleFromToken(String token) {
         Claims claims = parseClaims(token);
         return claims.get("role", String.class);
+    }
+
+    public Long getUserIdFromToken(String token) {
+        Claims claims = parseClaims(token);
+        return claims.get("userId", Long.class);
     }
 
     private Claims parseClaims(String token) {

@@ -28,6 +28,6 @@ public class AuthenticationService {
                 userLoginRequest.password()
         ));
         User user = userService.findByLogin(userLoginRequest.login());
-        return jwtTokenManager.generateToken(user.login(), user.role());
+        return jwtTokenManager.generateToken( user.id(), user.login(), user.role());
     }
 }

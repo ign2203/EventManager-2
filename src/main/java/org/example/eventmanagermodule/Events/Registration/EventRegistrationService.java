@@ -16,5 +16,4 @@ public class EventRegistrationService {
      public List<UserEntity> getAllUsersRegisterEvent(Long eventId) {
          return registrationRepository.findUsersByEventId(eventId);
     }
-
 }

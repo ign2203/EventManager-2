@@ -1,11 +1,10 @@
-package org.example.eventmanagermodule.consumer;
+package dev.sorokin.eventnotificator.consumer;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.example.eventmanagermodule.User.UserEntity;
 
 import java.time.LocalDateTime;
 
@@ -18,9 +17,8 @@ public class NotificationEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private UserEntity user;
+    @Column(name = "user_id")
+    private Long userId;
     private String message;
     private LocalDateTime createdAt;
     private boolean read;

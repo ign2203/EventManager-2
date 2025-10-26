@@ -40,6 +40,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+        String uri = request.getRequestURI();
+        if (uri.startsWith("/events/internal") || uri.startsWith("/internal")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             log.debug("No JWT token found in request to {}", request.getRequestURI());

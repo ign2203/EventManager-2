@@ -1,12 +1,14 @@
-package org.example.eventmanagermodule.producer;
+package dev.sorokin.eventnotificator.consumer.fieldChange;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
 @Data
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
+@Getter
+@Setter
 public class EventChangeNotification {
     Long eventId;
     FieldChangeString name;

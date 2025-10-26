@@ -2,10 +2,12 @@ package org.example.eventmanagermodule.Events;
 
 import jakarta.validation.Valid;
 import org.example.eventmanagermodule.Events.Converter.EventConverterDto;
+import org.example.eventmanagermodule.Events.Registration.EventRegistrationService;
 import org.example.eventmanagermodule.Events.dto.EventCreateRequestDto;
 import org.example.eventmanagermodule.Events.dto.EventDto;
 import org.example.eventmanagermodule.Events.dto.EventSearchRequestDto;
 import org.example.eventmanagermodule.Events.dto.EventUpdateRequestDto;
+import org.example.eventmanagermodule.User.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -21,10 +23,12 @@ public class EventController {
     private final static Logger log = LoggerFactory.getLogger(EventController.class);
     private final EventService eventService;
     private final EventConverterDto converterDto;
+    private final EventRegistrationService registrationService;
 
-    public EventController(EventService eventService, EventConverterDto converterDto) {
+    public EventController(EventService eventService, EventConverterDto converterDto, EventRegistrationService registrationService) {
         this.eventService = eventService;
         this.converterDto = converterDto;
+        this.registrationService = registrationService;
     }
 
     @PostMapping()
@@ -150,5 +154,23 @@ public class EventController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .build();
+    }
+    @GetMapping("/internal/{eventId}/users")
+    public ResponseEntity<List<Long>> getAllUsersByEventInternal(
+            @PathVariable Long eventId,
+            @RequestHeader("X-INTERNAL-KEY") String headerKey
+    ) {
+        if (!"super-secret-key".equals(headerKey)) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .build();
+        }
+        List<Long> userIds = registrationService.getAllUsersRegisterEvent(eventId)
+                .stream()
+                .map(UserEntity::getId)
+                .toList();
+
+        log.info("Internal request: found {} users registered for eventId={}", userIds.size(), eventId);
+        return ResponseEntity.ok(userIds);
     }
 }
