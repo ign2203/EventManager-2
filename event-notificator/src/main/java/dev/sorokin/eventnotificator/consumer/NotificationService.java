@@ -39,7 +39,8 @@ public class NotificationService {
                 .uri("http://localhost:8080/events/internal/{eventId}/users", eventId)
                 .header("X-INTERNAL-KEY", "super-secret-key")
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<Long>>() {})
+                .bodyToMono(new ParameterizedTypeReference<List<Long>>() {
+                })
                 .block();
         if (userIds == null || userIds.isEmpty()) {
             log.warn("No registered users found for eventId={}", eventId);
@@ -87,6 +88,7 @@ public class NotificationService {
         log.info("Marked {} notifications as read for userId={}", notificationEntities.size(), userId);
         return notificationDto;
     }
+
     @Transactional
     public void markAsRead(List<Long> notificationIds) {
         Long userId = getCurrentUserId();

@@ -2,7 +2,6 @@ package org.example.eventmanagermodule.Location;
 
 import jakarta.persistence.EntityNotFoundException;
 import org.example.eventmanagermodule.Location.Converter.LocationConverter;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +45,6 @@ public class LocationService {
 
     public Location getLocationById(Long locationId) {
         if (!locationRepository.existsById(locationId)) {
-
             throw new EntityNotFoundException("Location with id " + locationId + " does not exist");
         }
         return converter.fromEntityToDomain(locationRepository.findById(locationId).get());
@@ -57,7 +55,6 @@ public class LocationService {
 
         var updateEntityLocation = locationRepository.findById(locationId)
                 .orElseThrow(() -> new EntityNotFoundException("Location with locationId " + locationId + " does not exist"));
-
         updateEntityLocation.setName(updateNewLocation.name());
         updateEntityLocation.setAddress(updateNewLocation.address());
         updateEntityLocation.setCapacity(updateNewLocation.capacity());

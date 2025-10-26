@@ -26,4 +26,3 @@ public class NotificationEntity {
     @Column(columnDefinition = "text")
     private String payload;
 }
-

@@ -91,8 +91,6 @@ public class SecurityConfiguration {
                         .hasAnyAuthority("ADMIN", "USER")
 
                         .anyRequest().authenticated()
-
-
                 )
                 .exceptionHandling(exception ->
                         exception

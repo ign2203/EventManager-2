@@ -26,4 +26,3 @@ public class SecurityUtils {
         return userService.findByLogin(username);
     }
 }
-

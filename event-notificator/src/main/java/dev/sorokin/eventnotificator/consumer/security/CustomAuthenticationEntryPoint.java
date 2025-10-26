@@ -17,9 +17,11 @@ import java.time.LocalDateTime;
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationEntryPoint.class);
     private final ObjectMapper objectMapper;
+
     public CustomAuthenticationEntryPoint(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
     }
+
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,

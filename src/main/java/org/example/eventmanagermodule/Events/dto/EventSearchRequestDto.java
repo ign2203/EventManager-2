@@ -39,4 +39,3 @@ public class EventSearchRequestDto {
     private Long locationId;
     private EventStatus status;
 }
-

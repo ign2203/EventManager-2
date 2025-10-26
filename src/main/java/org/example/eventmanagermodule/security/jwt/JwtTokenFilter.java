@@ -4,10 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.example.eventmanagermodule.User.UserService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,14 +22,11 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(JwtTokenFilter.class);
     private final JwtTokenManager jwtTokenManager;
-    private final UserService userService;
     private static final String BEARER_PREFIX = "Bearer ";
 
     public JwtTokenFilter(
-            JwtTokenManager jwtTokenManager,
-            @Lazy UserService userService) {
+            JwtTokenManager jwtTokenManager) {
         this.jwtTokenManager = jwtTokenManager;
-        this.userService = userService;
     }
 
     @Override
