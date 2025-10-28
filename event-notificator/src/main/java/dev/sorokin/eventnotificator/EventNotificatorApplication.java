@@ -11,5 +11,4 @@ public class EventNotificatorApplication {
     public static void main(String[] args) {
         SpringApplication.run(EventNotificatorApplication.class, args);
     }
-
 }
