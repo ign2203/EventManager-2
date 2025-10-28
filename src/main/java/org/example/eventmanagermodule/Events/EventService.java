@@ -10,51 +10,47 @@ import org.example.eventmanagermodule.Events.dto.EventSearchRequestDto;
 import org.example.eventmanagermodule.Events.dto.EventUpdateRequestDto;
 import org.example.eventmanagermodule.Location.LocationEntity;
 import org.example.eventmanagermodule.Location.LocationRepository;
-import org.example.eventmanagermodule.User.User;
-import org.example.eventmanagermodule.User.UserEntity;
-import org.example.eventmanagermodule.User.UserRepository;
-import org.example.eventmanagermodule.User.UserService;
+import org.example.eventmanagermodule.User.*;
+import org.example.eventmanagermodule.producer.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
+
 import static java.time.LocalDateTime.now;
 
 @Service
 public class EventService {
     private final static Logger log = LoggerFactory.getLogger(EventService.class);
-    @Value("${event.date.min}")
     private final LocationRepository locationRepository;
     private final EventRepository eventRepository;
     private final EventConverterEntity eventConverterEntity;
-    private final UserService userService;
     private final EventRegistrationRepository eventRegistrationRepository;
     private final UserRepository userRepository;
+    private final EventProducerService eventProducerService;
+    private final SecurityUtils securityUtils;
 
     public EventService(LocationRepository locationRepository,
                         EventRepository eventRepository,
                         EventConverterEntity eventConverterEntity,
-                        UserService userService,
                         EventRegistrationRepository eventRegistrationRepository,
-                        UserRepository userRepository) {
+                        UserRepository userRepository, EventProducerService eventProducerService, SecurityUtils securityUtils) {
         this.locationRepository = locationRepository;
         this.eventRepository = eventRepository;
         this.eventConverterEntity = eventConverterEntity;
-        this.userService = userService;
         this.eventRegistrationRepository = eventRegistrationRepository;
         this.userRepository = userRepository;
+        this.eventProducerService = eventProducerService;
+        this.securityUtils = securityUtils;
     }
 
     public Event postCreateEvent(EventCreateRequestDto eventCreateRequestDto) {
-        User currentUser = getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
         Long ownerId = currentUser.id();
         LocationEntity location = locationRepository.findById(eventCreateRequestDto.getLocationId())
                 .orElseThrow(() -> new EntityNotFoundException("Location not found"));
@@ -118,7 +114,7 @@ public class EventService {
         Event updatedEvent = new Event(
                 searchEvent.getId(),
                 eventUpdateRequestDto.getName(),
-                getCurrentUser().id(),
+                securityUtils.getCurrentUser().id(),
                 eventUpdateRequestDto.getLocationId(),
                 eventUpdateRequestDto.getMaxPlaces(),
                 searchEvent.getOccupiedPlaces(),
@@ -127,15 +123,30 @@ public class EventService {
                 eventUpdateRequestDto.getDuration(),
                 searchEvent.getStatus()
         );
-        Long userId = getCurrentUser().id();
-        log.info("User id={} is updating event '{}' at location id={}", userId, updatedEvent.name(), updatedEvent.locationId());
+        FieldChangeString nameChange = new FieldChangeString(searchEvent.getName(), updatedEvent.name());
+        FieldChangeInteger maxPlacesChange = new FieldChangeInteger(searchEvent.getMaxPlaces(), updatedEvent.maxPlaces());
+        FieldChangeDateTime dateChange = new FieldChangeDateTime(searchEvent.getDate(), updatedEvent.date());
+        FieldChangeDecimal costChange = new FieldChangeDecimal(searchEvent.getCost(), updatedEvent.cost());
+        FieldChangeInteger durationChange = new FieldChangeInteger(searchEvent.getDuration(), updatedEvent.duration());
+        FieldChangeLong locationIdChange = new FieldChangeLong(searchEvent.getLocation().getId(), updatedEvent.locationId());
+        FieldChangeString statusChange = new FieldChangeString(searchEvent.getStatus().toString(), updatedEvent.status().toString());
+        EventChangeNotification notification = new EventChangeNotification(
+                updatedEvent.id(),
+                nameChange,
+                maxPlacesChange,
+                dateChange,
+                costChange,
+                durationChange,
+                locationIdChange,
+                statusChange
+        );
         eventRepository.save(eventConverterEntity.toEntity(updatedEvent));
-        log.info("Event '{}' (id={}) successfully updated by user id={}", updatedEvent.name(), updatedEvent.id(), userId);
+        eventProducerService.sendEventChange(notification);
         return updatedEvent;
     }
 
     public List<Event> getMyEvent() {
-        User currentUser = getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
         Long ownerId = currentUser.id();
         List<EventEntity> searchedEvent = eventRepository.findAllByOwnerId(ownerId);
         log.info("Retrieving events created by user id={} ({} events found)", ownerId, searchedEvent.size());
@@ -180,7 +191,7 @@ public class EventService {
     public Event postRegisterEvent(Long eventId) {
         EventEntity searchEvent = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EntityNotFoundException("Event with id " + eventId + " not found"));
-        User currentUser = getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
         UserEntity userEntity = userRepository.findById(currentUser.id())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         if (eventRegistrationRepository.existsByEventEntityAndUserEntity(searchEvent, userEntity)) {
@@ -209,7 +220,7 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public List<Event> getMyRegisterEvent() {
-        User currentUser = getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
         UserEntity userEntity = userRepository.findById(currentUser.id())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         var eventEntity = eventRegistrationRepository.myRegisterEvent(userEntity);
@@ -223,7 +234,7 @@ public class EventService {
 
     @Transactional
     public void deleteRegisterEvent(Long eventId) {
-        User currentUser = getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
         UserEntity userEntity = userRepository.findById(currentUser.id())
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
         EventEntity searchEvent = eventRepository.findById(eventId)
@@ -233,7 +244,7 @@ public class EventService {
         }
         EventRegistration registration = eventRegistrationRepository
                 .findByEventEntityAndUserEntity(searchEvent, userEntity)
-                .orElseThrow(() -> new ValidationException("User is not registered for this event"));// нужно подумать по поводу исключения
+                .orElseThrow(() -> new ValidationException("User is not registered for this event"));
         eventRegistrationRepository.delete(registration);
         int newPlaces = Math.max(0, searchEvent.getOccupiedPlaces() - 1);
         searchEvent.setOccupiedPlaces(newPlaces);
@@ -241,20 +252,32 @@ public class EventService {
         log.info("Registration removed: user id={} from event id={}", userEntity.getId(), eventId);
     }
 
-    private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !authentication.isAuthenticated()) {
-            throw new AuthenticationCredentialsNotFoundException("The user is not authenticated");
-        }
-        String username = authentication.getName();
-        log.info("Authenticated request by user '{}'", username);
-        return userService.findByLogin(username);
+    @Transactional
+    public void closeEvent(Long eventId) {
+        EventEntity searchEvent = verifyEventAccess(eventId);
+        EventStatus oldStatus = searchEvent.getStatus();
+        String newStatus = EventStatus.CLOSED.toString();
+        FieldChangeString statusChange = new FieldChangeString(oldStatus.toString(), newStatus);
+        log.info("Event [{}] status changed from {} to {}", eventId, oldStatus, newStatus);
+        searchEvent.setStatus(EventStatus.CLOSED);
+        EventChangeNotification notification = new EventChangeNotification(
+                searchEvent.getId(),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                statusChange
+        );
+        eventRepository.save(searchEvent);
+        eventProducerService.sendEventChange(notification);
     }
 
     public EventEntity verifyEventAccess(Long eventId) {
         EventEntity searchEvent = eventRepository.findById(eventId)
                 .orElseThrow(() -> new EntityNotFoundException("Event with id " + eventId + " not found"));
-        User currentUser = getCurrentUser();
+        User currentUser = securityUtils.getCurrentUser();
         Long ownerId = currentUser.id();
         String userRole = currentUser.role().name();
         Long eventOwnerId = searchEvent.getOwner().getId();

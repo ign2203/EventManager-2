@@ -1,7 +1,6 @@
 package org.example.eventmanagermodule.security;
 
 import org.example.eventmanagermodule.security.jwt.JwtTokenFilter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -16,24 +15,23 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
-    @Autowired
-    private JwtTokenFilter jwtTokenFilter;
+    private final JwtTokenFilter jwtTokenFilter;
+    private final CustomerDetailsService customerDetailsService;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
-    @Autowired
-    private CustomerDetailsService customerDetailsService;
-
-    @Autowired
-    private CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
-
-    @Autowired//403
-    private CustomAccessDeniedHandler customAccessDeniedHandler;
+    public SecurityConfiguration(JwtTokenFilter jwtTokenFilter, CustomerDetailsService customerDetailsService, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomAccessDeniedHandler customAccessDeniedHandler) {
+        this.jwtTokenFilter = jwtTokenFilter;
+        this.customerDetailsService = customerDetailsService;
+        this.customAuthenticationEntryPoint = customAuthenticationEntryPoint;
+        this.customAccessDeniedHandler = customAccessDeniedHandler;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -43,57 +41,56 @@ public class SecurityConfiguration {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .authorizeHttpRequests(authorizeRequests ->
-                        authorizeRequests
-                                .requestMatchers(HttpMethod.GET, "/locations/**")
-                                .hasAnyAuthority("ADMIN", "USER")
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/events/internal/**").permitAll()  // для внутреннего обмена
+                        .requestMatchers("/internal/**").permitAll()
 
-                                .requestMatchers(HttpMethod.POST, "/locations/**")
-                                .hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/locations/**")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-                                .requestMatchers(HttpMethod.DELETE, "/locations/**")
-                                .hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/locations/**")
+                        .hasAnyAuthority("ADMIN")
 
-                                .requestMatchers(HttpMethod.PUT, "/locations/**")
-                                .hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/locations/**")
+                        .hasAnyAuthority("ADMIN")
 
-                                .requestMatchers(HttpMethod.GET, "/users/**")
-                                .hasAnyAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/locations/**")
+                        .hasAnyAuthority("ADMIN")
 
-                                .requestMatchers(HttpMethod.POST, "/users")
-                                .permitAll()
+                        .requestMatchers(HttpMethod.GET, "/users/**")
+                        .hasAnyAuthority("ADMIN")
 
-                                .requestMatchers(HttpMethod.POST, "/users/auth")
-                                .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/users")
+                        .permitAll()
 
-                                .requestMatchers(HttpMethod.POST, "/events")
-                                .hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/users/auth")
+                        .permitAll()
 
-                                .requestMatchers(HttpMethod.DELETE, "/events/**")
-                                .hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/events")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-                                .requestMatchers(HttpMethod.GET, "/events/**")
-                                .hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.DELETE, "/events/**")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-                                .requestMatchers(HttpMethod.GET, "/events/my")
-                                .hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.GET, "/events/**")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-                                .requestMatchers(HttpMethod.POST, "/search")
-                                .hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.GET, "/events/my")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-                                .requestMatchers(HttpMethod.POST, "/registrations/**")
-                                .hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/search")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-                                .requestMatchers(HttpMethod.GET, "/registrations/my")
-                                .hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.POST, "/registrations/**")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-                                .requestMatchers(HttpMethod.DELETE, "/registrations/cancel/**")
-                                .hasAnyAuthority("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.GET, "/registrations/my")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-                                .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/registrations/cancel/**")
+                        .hasAnyAuthority("ADMIN", "USER")
 
-
-
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception ->
                         exception
